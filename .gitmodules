@@ -7,3 +7,6 @@
 [submodule "lib/juice-project-handles"]
 	path = lib/juice-project-handles
 	url = https://github.com/jbx-protocol/juice-project-handles
+[submodule "lib/base64"]
+	path = lib/base64
+	url = https://github.com/Brechtpd/base64
