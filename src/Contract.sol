@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import '@jbx-protocol-v2/contracts/interfaces/IJBTokenUriResolver.sol';
-import '../lib/juice-project-handles/contracts/interfaces/IJBProjectHandles.sol';
+import '@juicebox/interfaces/IJBTokenUriResolver.sol';
+import '@juicebox/interfaces/IJBProjectHandles.sol';
 
 contract TokenUriResolver is IJBTokenUriResolver { // TODO Make ownable
   function getUri(uint256 _projectId) external view override returns (string memory tokenUri) {
