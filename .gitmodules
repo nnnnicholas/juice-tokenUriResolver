@@ -4,3 +4,6 @@
 [submodule "lib/juice-contracts-v3"]
 	path = lib/juice-contracts-v3
 	url = https://github.com/jbx-protocol/juice-contracts-v3
+[submodule "lib/juice-project-handles"]
+	path = lib/juice-project-handles
+	url = https://github.com/jbx-protocol/juice-project-handles
