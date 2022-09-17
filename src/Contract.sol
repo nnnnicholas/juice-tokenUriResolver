@@ -46,6 +46,7 @@ contract TokenUriResolver is
             .currentTotalOverflowOf(_projectId, 18, 1);
 
         string[] memory parts = new string[](3);
+        // TODO wrap in metadata JSON 
         parts[0] = string(
             abi.encodePacked(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" version="1.1">',
