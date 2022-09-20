@@ -6,6 +6,7 @@ import "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
 import "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import "base64/base64.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
+import "./ITypeface.sol";
 
 contract TokenUriResolver is
     IJBTokenUriResolver // TODO Make ownable
@@ -28,6 +29,14 @@ contract TokenUriResolver is
         IJBSingleTokenPaymentTerminalStore singleTokenPaymentTerminalStore = IJBSingleTokenPaymentTerminalStore(
                 0x96a594ABE6B910E05E486b63B32fFe29DA5d33f7
             );
+
+        ITypeface capsulesTypeface = ITypeface(
+            0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A
+        );
+
+        bytes memory fontSource = ITypeface(capsulesTypeface).sourceOf(
+            Font({weight: 400, style: "normal"})
+        );
 
         // If handle is set
         if (
@@ -60,15 +69,16 @@ contract TokenUriResolver is
                 ' ETH.", "image":"data:image/svg+xml;base64,'
             )
         );
-        
         parts[2] = Base64.encode(
             abi.encodePacked(
-                '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" version="1.1"> <rect width="300" height="400" stroke="black" stroke-width="6" fill="#ffaf03"/> <text xml:space="preserve" style="font-size:42px;line-height:1;font-family:sans-serif;word-spacing:0px;white-space:pre" transform="translate(0,0)"> <tspan x="19" y="52" style="font-family:Helvetica">',
+                '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" version="1.1"><style>.capsules-400{ white-space: pre; font-family: Capsules-400 } @font-face { font-family: "Capsules-400"; src: url(data:font/truetype;charset=utf-8;base64,',
+                fontSource,
+                ') format("opentype")}</style> <rect width="300" height="400" stroke="black" stroke-width="6" fill="#ffaf03"/> <text class="capsules-400" xml:space="preserve" style="font-size:42px;line-height:1;word-spacing:0px;white-space:pre" transform="translate(0,0)"> <tspan x="19" y="52">',
                 projectName,
-                '</tspan> </text> <text xml:space="preserve" style="font-size:42.6667px;line-height:1;font-family:sans-serif;word-spacing:0px;white-space:pre" transform="translate(0,192)"> <tspan x="19" y="52" style="font-family:Helvetica;fill:#ff0000">',
-                'Overflow </tspan> <tspan x="19" y="96" style="font-family:Helvetica;-inkscape-font-specification:Helvetica;fill:#ff0000">',
+                '</tspan> </text> <text class="capsules-400" xml:space="preserve" style="font-size:42.6667px;line-height:1;word-spacing:0px;white-space:pre" transform="translate(0,192)"> <tspan x="19" y="52" style="fill:#ff0000">',
+                'Overflow </tspan> <tspan x="19" y="96" style="fill:#ff0000">',
                 (overflow / 10**18).toString(),
-                'ETH </tspan> </text></svg>'
+                "ETH </tspan> </text></svg>"
             )
         );
         parts[3] = string('"}');

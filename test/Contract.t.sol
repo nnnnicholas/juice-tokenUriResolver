@@ -11,7 +11,7 @@ contract ContractTest is Test {
   IJBProjects jbProjects = IJBProjects(0xD8B4359143eda5B2d763E127Ed27c77addBc47d3); // mainnet
 
   function testHandleOf() external {
-    c.getUri(55);
+    c.getUri(1);
   }
 
 }
