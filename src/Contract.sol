@@ -47,7 +47,7 @@ contract TokenUriResolver is
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
     uint256 currentFundingCycleId = fundingCycle.number; // Project's current funding cycle id
     
-    //next line should be to pass on 52 IJBSingleTokenPaymentTerminal
+    //need IJBSingleTokenPaymentTerminal to pass on 52
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(primaryEthPaymentTerminal,_projectId); // Project's ETH balance
     
