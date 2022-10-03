@@ -49,7 +49,7 @@ contract TokenUriResolver is
     
     //need IJBSingleTokenPaymentTerminal to pass on 52
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
-    uint256 balance = singleTokenPaymentTerminalStore.balanceOf(primaryEthPaymentTerminal,_projectId); // Project's ETH balance
+    uint256 balance = singleTokenPaymentTerminalStore.balanceOf[primaryEthPaymentTerminal][_projectId]; // Project's ETH balance
     
     uint256 distributionLimit =singleTokenPaymentTerminalStore.distributionLimitOf(primaryEthPaymentTerminal,_projectId,currentFundingCycleId); // Project's distribution limit
     uint256 totalSupply = tokenStore.totalSupplyOf(_projectId); // Project's token total supply
