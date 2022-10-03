@@ -2,6 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "@juicebox/interfaces/IJBTokenUriResolver.sol";
+import {IJBTokenStore} from "@juicebox/interfaces/IJBTokenStore.sol";
+import {JBFundingCycle} from "@juicebox/structs/JBFundingCycle.sol";
+import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
 import "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
 import "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import "base64/base64.sol";
@@ -14,67 +17,25 @@ contract TokenUriResolver is
     using Strings for uint256;
 
     string projectName;
+    ITypeface capsulesTypeface =
+        ITypeface(0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A); // Capsules typeface
+    bytes fontSource = // Capsules font source
+        ITypeface(capsulesTypeface).sourceOf(
+            Font({weight: 400, style: "normal"})
+        );
     IJBFundingCycleStore fundingCycleStore =
         IJBFundingCycleStore(0x6f18cF9173136c0B5A6eBF45f19D58d3ff2E17e6);
-
     IJBProjects projects =
         IJBProjects(0xD8B4359143eda5B2d763E127Ed27c77addBc47d3);
-
     IJBDirectory directory =
         IJBDirectory(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C);
-
     IJBTokenStore tokenStore =
         IJBTokenStore(0x6FA996581D7edaABE62C15eaE19fEeD4F1DdDfE7);
-
     IJBProjectHandles projectHandles =
         IJBProjectHandles(0xE3c01E9Fd2a1dCC6edF0b1058B5757138EF9FfB6);
     IJBSingleTokenPaymentTerminalStore singleTokenPaymentTerminalStore =
         IJBSingleTokenPaymentTerminalStore(
             0xdF7Ca703225c5da79A86E08E03A206c267B7470C
-        );
-
-    ITypeface capsulesTypeface =
-        ITypeface(0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A);
-
-    IJBPaymentTerminal primaryEthPaymentTerminal =
-        directory.primaryTerminalOf(_projectId, address(0));
-
-    bytes fontSource =
-        ITypeface(capsulesTypeface).sourceOf(
-            Font({weight: 400, style: "normal"})
-        );
-
-    // Get current funding cycle
-    FundingCycle fundingCycle = fundingCycleStore.currentOf(_projectId);
-    uint256 currentFundingCycleId = fundingCycle.id;
-
-    // Get balance
-    uint256 balance =
-        singleTokenPaymentTerminalStore.balanceOf(
-            _projectId,
-            currentFundingCycleId
-        );
-
-    // Get distribution limit
-    uint256 distributionLimit =
-        singleTokenPaymentTerminalStore.distributionLimitOf(
-            primaryEthPaymentTerminal,
-            _projectId,
-            currentFundingCycleId
-        );
-
-    // Get total supply of project token
-    uint256 totalSupply = tokenStore.totalSupplyOf(_projectId);
-
-    // Get project owner
-    address owner = projects.ownerOf(_projectId);
-
-    // Get overflow
-    uint256 overflow =
-        singleTokenPaymentTerminalStore.currentTotalOverflowOf(
-            _projectId,
-            18,
-            1
         );
 
     function getUri(uint256 _projectId)
@@ -83,6 +44,17 @@ contract TokenUriResolver is
         override
         returns (string memory tokenUri)
     {
+    JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
+    uint256 currentFundingCycleId = fundingCycle.number; // Project's current funding cycle id
+    
+    //next line should be to pass on 52 IJBSingleTokenPaymentTerminal
+    IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
+    uint256 balance = singleTokenPaymentTerminalStore.balanceOf(primaryEthPaymentTerminal,_projectId); // Project's ETH balance
+    
+    uint256 distributionLimit =singleTokenPaymentTerminalStore.distributionLimitOf(primaryEthPaymentTerminal,_projectId,currentFundingCycleId); // Project's distribution limit
+    uint256 totalSupply = tokenStore.totalSupplyOf(_projectId); // Project's token total supply
+    address owner = projects.ownerOf(_projectId); // Project's owner
+    uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,18,1); // Project's overflow
         // If handle is set
         if (
             keccak256(abi.encode(projectHandles.handleOf(_projectId))) !=
