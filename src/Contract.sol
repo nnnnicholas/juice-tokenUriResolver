@@ -27,8 +27,8 @@ contract TokenUriResolver is
             0xE3c01E9Fd2a1dCC6edF0b1058B5757138EF9FfB6
         );
         IJBSingleTokenPaymentTerminalStore singleTokenPaymentTerminalStore = IJBSingleTokenPaymentTerminalStore(
-                0x96a594ABE6B910E05E486b63B32fFe29DA5d33f7
-            );
+            0xdF7Ca703225c5da79A86E08E03A206c267B7470C
+        );
 
         ITypeface capsulesTypeface = ITypeface(
             0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A
