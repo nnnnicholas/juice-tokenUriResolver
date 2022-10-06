@@ -95,7 +95,9 @@ contract TokenUriResolver is
                 '</tspan> </text> <text class="capsules-400" xml:space="preserve" style="font-size:42.6667px;line-height:1;word-spacing:0px;white-space:pre" transform="translate(0,192)"> <tspan x="19" y="52" style="fill:#ff0000">',
                 'Overflow </tspan> <tspan x="19" y="96" style="fill:#ff0000">',
                 (overflow / 10**18).toString(),
-                "ETH </tspan> </text></svg>"
+                "ETH </tspan> </text><text>",
+                balance, " ", distributionLimit, " ", distributionLimitCurrency, " ", totalSupply, " ", owner, " ", currentFundingCycleId,
+                "</text></svg>"
             )
         );
         parts[3] = string('"}');
