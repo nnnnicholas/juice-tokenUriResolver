@@ -5,6 +5,7 @@ import "@juicebox/interfaces/IJBTokenUriResolver.sol";
 import {IJBTokenStore} from "@juicebox/interfaces/IJBTokenStore.sol";
 import {JBFundingCycle} from "@juicebox/structs/JBFundingCycle.sol";
 import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
+import {IJBController} from "@juicebox/interfaces/IJBController.sol";
 import "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
 import "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import "base64/base64.sol";
@@ -16,7 +17,6 @@ contract TokenUriResolver is
 {
     using Strings for uint256;
 
-    string projectName;
     ITypeface capsulesTypeface =
         ITypeface(0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A); // Capsules typeface
     bytes fontSource = // Capsules font source
@@ -37,6 +37,8 @@ contract TokenUriResolver is
         IJBSingleTokenPaymentTerminalStore(
             0xdF7Ca703225c5da79A86E08E03A206c267B7470C
         );
+    IJBController controller =
+        IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
 
     function getUri(uint256 _projectId)
         external
@@ -47,14 +49,16 @@ contract TokenUriResolver is
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
     uint256 currentFundingCycleId = fundingCycle.number; // Project's current funding cycle id
     
-    //need IJBSingleTokenPaymentTerminal to pass on 52
-    IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
-    uint256 balance = singleTokenPaymentTerminalStore.balanceOf[primaryEthPaymentTerminal][_projectId]; // Project's ETH balance
     
-    uint256 distributionLimit =singleTokenPaymentTerminalStore.distributionLimitOf(primaryEthPaymentTerminal,_projectId,currentFundingCycleId); // Project's distribution limit
+    IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
+    uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
+
+    uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
+    (uint256 distributionLimit, uint256 distributionLimitCurrency) = controller.distributionLimitOf(_projectId, latestConfiguration, primaryEthPaymentTerminal, JBTokens.ETH); // Project's distribution limit
     uint256 totalSupply = tokenStore.totalSupplyOf(_projectId); // Project's token total supply
     address owner = projects.ownerOf(_projectId); // Project's owner
     uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,18,1); // Project's overflow
+    string memory projectName;
         // If handle is set
         if (
             keccak256(abi.encode(projectHandles.handleOf(_projectId))) !=
