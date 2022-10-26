@@ -5,6 +5,7 @@ import "@juicebox/interfaces/IJBTokenUriResolver.sol";
 import {IJBTokenStore} from "@juicebox/interfaces/IJBTokenStore.sol";
 import {JBFundingCycle} from "@juicebox/structs/JBFundingCycle.sol";
 import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
+import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
 import {IJBController} from "@juicebox/interfaces/IJBController.sol";
 import "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
 import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
@@ -65,12 +66,22 @@ contract TokenUriResolver is IJBTokenUriResolver
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
 
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
-    (uint256 distributionLimit, uint256 distributionLimitCurrency) = controller.distributionLimitOf(_projectId, latestConfiguration, primaryEthPaymentTerminal, JBTokens.ETH); // Project's distribution limit
-    uint256 totalSupply = tokenStore.totalSupplyOf(_projectId); // Project's token total supply
+    
+    // Distribution Limit
+    string memory distributionLimitCurrency;
+    (uint256 distributionLimitPreprocessed, uint256 distributionLimitCurrencyPreprocessed) = controller.distributionLimitOf(_projectId, latestConfiguration, primaryEthPaymentTerminal, JBTokens.ETH); // Project's distribution limit
+    if (distributionLimitCurrencyPreprocessed == 1){
+        distributionLimitCurrency = "ETH";
+    } else {
+        distributionLimitCurrency = "USD";
+    }
+    string memory distributionLimit = string(abi.encodePacked((distributionLimitPreprocessed/10**18).toString(), " ", distributionLimitCurrency)); // Project's distribution limit
+
+    uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
     address owner = projects.ownerOf(_projectId); // Project's owner
     // string ownerString = resolve()
 
-    uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,18,1); // Project's overflow
+    uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
     string memory projectName;
         // If handle is set
         if (
@@ -113,7 +124,7 @@ contract TokenUriResolver is IJBTokenUriResolver
         //     )
         // );
         // parts[3] = string('"}');
-        parts[0] = Base64.encode(abi.encodePacked("name: ", projectName, ", \nbalance: ", balance.toString(), ", \noverflow: ", overflow.toString(), ", \ndist limit: ", distributionLimit.toString(), " ", distributionLimitCurrency.toString(), ", \ntotal supply: ", totalSupply.toString(), ", \nowner: ", toAsciiString(owner), ", \nFC#", currentFundingCycleId.toString()));
+        parts[0] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", toAsciiString(owner), "\nFC#", currentFundingCycleId.toString()));
         string memory uri =
             // abi.encodePacked(
                 parts[0]
