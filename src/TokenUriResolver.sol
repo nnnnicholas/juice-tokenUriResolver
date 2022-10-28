@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@juicebox/interfaces/IJBTokenUriResolver.sol";
-import {IJBTokenStore} from "@juicebox/interfaces/IJBTokenStore.sol";
+import {IJBToken, IJBTokenStore} from "@juicebox/interfaces/IJBTokenStore.sol";
 import {JBFundingCycle} from "@juicebox/structs/JBFundingCycle.sol";
 import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
 import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
@@ -12,23 +12,21 @@ import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHand
 import "base64/base64.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "./ITypeface.sol";
-    // ENS RESOLUTION
-    abstract contract ENS {
-    function resolver(bytes32 node) public virtual view returns (Resolver);
-    }
-    abstract contract Resolver {
-        function addr(bytes32 node) public virtual view returns (address);
-    }
+
+// ENS RESOLUTION
+interface IReverseRegistrar {
+    function node(address) external view returns (bytes32);
+}
+interface IResolver{
+    function name(bytes32) external view returns(string memory);
+}
 
 contract TokenUriResolver is IJBTokenUriResolver
 {
     using Strings for uint256;
 
-    ENS ens = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
-    function resolve(bytes32 node) public view returns(address) {
-        Resolver resolver = ens.resolver(node);
-        return resolver.addr(node);
-    }
+    IReverseRegistrar reverseRegistrar = IReverseRegistrar(0x084b1c3C81545d370f3634392De611CaaBFf8148); // mainnet
+    IResolver resolver = IResolver(0xA2C122BE93b0074270ebeE7f6b7292C7deB45047); // mainnet
 
     ITypeface capsulesTypeface =
         ITypeface(0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A); // Capsules typeface
@@ -59,9 +57,17 @@ contract TokenUriResolver is IJBTokenUriResolver
         override
         returns (string memory tokenUri)
     {
+    // Funding Cycle
+    // FC#
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
     uint256 currentFundingCycleId = fundingCycle.number; // Project's current funding cycle id
-    
+    // Duration
+    uint256 start = fundingCycle.start; // Project's funding cycle start time
+    uint256 duration = fundingCycle.duration; // Project's current funding cycle duration
+    uint256 timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
+    uint256 timeLeftInDays = timeLeft / 86400; // Project's current funding cycle time left in days //TODO Improve for hours
+
+
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
 
@@ -77,11 +83,35 @@ contract TokenUriResolver is IJBTokenUriResolver
     }
     string memory distributionLimit = string(abi.encodePacked((distributionLimitPreprocessed/10**18).toString(), " ", distributionLimitCurrency)); // Project's distribution limit
 
+    // Supply
     uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
+    
+    // JBToken ERC20
+    IJBToken jbToken = tokenStore.tokenOf(_projectId); 
+    bool tokenIssued;
+    string memory jbTokenString;
+    string memory tokenIssuedString; 
+    address jbTokenAddress = address(jbToken);
+    if (jbTokenAddress == address(0)){tokenIssued = false;} else {
+        tokenIssued = true; 
+        jbTokenString = toAsciiString(jbTokenAddress);
+    }
+    if(tokenIssued){tokenIssuedString = "True";} else {tokenIssuedString = "False";}
+    
+
+    // Owner 
     address owner = projects.ownerOf(_projectId); // Project's owner
-    // string ownerString = resolve()
+    string memory ownerName;
+    // TODO Use AddressToENSString library (wip) to resolve ENS address onchain
+    // try resolver.name(reverseRegistrar.node(owner)) returns (string memory _ownerName) {
+    //     ownerName = _ownerName;
+    // } catch {
+        ownerName = toAsciiString(owner);
+    // }
 
     uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
+    
+    // Project Handle
     string memory projectName;
         // If handle is set
         if (
@@ -124,7 +154,7 @@ contract TokenUriResolver is IJBTokenUriResolver
         //     )
         // );
         // parts[3] = string('"}');
-        parts[0] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", toAsciiString(owner), "\nFC#", currentFundingCycleId.toString()));
+        parts[0] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", ownerName, "\nFC ", currentFundingCycleId.toString(), "\nDays Left: ", timeLeftInDays, "\nToken Issued: ", tokenIssuedString, "\nToken address: ", jbTokenString, "\n"));
         string memory uri =
             // abi.encodePacked(
                 parts[0]
@@ -133,6 +163,8 @@ contract TokenUriResolver is IJBTokenUriResolver
         ;
         return uri;
     }
+
+    
 
 // borrowed from https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
 function toAsciiString(address x) internal pure returns (string memory) {
