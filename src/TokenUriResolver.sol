@@ -110,7 +110,8 @@ contract TokenUriResolver is IJBTokenUriResolver
     // }
 
     uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
-    
+    string memory overflowString = overflow.toString();
+
     // Project Handle
     string memory projectName;
         // If handle is set
@@ -128,39 +129,45 @@ contract TokenUriResolver is IJBTokenUriResolver
         }
 
         string[] memory parts = new string[](4);
-        // parts[0] = string("data:application/json;base64,");
-        // parts[1] = string(
-        //     abi.encodePacked(
-        //         '{"name":"',
-        //         projectName,
-        //         '", "description":"',
-        //         projectName,
-        //         " is a project on the Juicebox Protocol. It has an overflow of ",
-        //         (overflow / 10**18).toString(),
-        //         ' ETH.", "image":"data:image/svg+xml;base64,'
-        //     )
-        // );
-        // parts[2] = Base64.encode(
-        //     abi.encodePacked(
-        //         '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" version="1.1"><style>.capsules-400{ white-space: pre; font-family: Capsules-400 } @font-face { font-family: "Capsules-400"; src: url(data:font/truetype;charset=utf-8;base64,',
-        //         fontSource,
-        //         ') format("opentype")}</style> <rect width="300" height="400" stroke="black" stroke-width="6" fill="#ffaf03"/> <text class="capsules-400" xml:space="preserve" style="font-size:42px;line-height:1;word-spacing:0px;white-space:pre" transform="translate(0,0)"> <tspan x="19" y="52">',
-        //         projectName, 
-        //         '</tspan> </text> <text class="capsules-400" xml:space="preserve" style="font-size:42.6667px;line-height:1;word-spacing:0px;white-space:pre" transform="translate(0,192)"> <tspan x="19" y="52" style="fill:#ff0000">',
-        //         'Overflow </tspan> <tspan x="19" y="96" style="fill:#ff0000">',
-        //         (overflow / 10**18).toString(),
-        //         "ETH </tspan> </text><text>",
-        //         "</text></svg>"
-        //     )
-        // );
-        // parts[3] = string('"}');
-        parts[0] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", ownerName, "\nFC ", currentFundingCycleId.toString(), "\nDays Left: ", timeLeftInDays, "\nToken Issued: ", tokenIssuedString, "\nToken address: ", jbTokenString, "\n"));
+        parts[0] = string("data:application/json;base64,");
+        parts[1] = string(
+            abi.encodePacked(
+                '{"name":"',
+                projectName,
+                '", "description":"',
+                projectName,
+                " is a project on the Juicebox Protocol. It has an overflow of ",
+                overflowString,
+                ' ETH.", "image":"data:image/svg+xml;base64,'
+            )
+        );
+        parts[2] = Base64.encode(
+            abi.encodePacked(
+                '<svg width="289" height="403" viewBox="0 0 289 403" fill="none" xmlns="http://www.w3.org/2000/svg"> <style> text{ font-size: 16px; font-family: "Capsules", monospace; font-weight: 500; font-variant: small-caps; white-space: pre-wrap; } </style> <g clip-path="url(#clip0_150_56)"> <path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/> <!--brown background--> <rect width="289" height="22" fill="#FF9213"/> <!--orange header--> <g filter="url(#filter0_d_150_56)"> <a href="https://juicebox.money/@juicebox"> <!--project href--> <text x="16" y="16" fill="#642617">',
+                "@",
+                projectName,
+                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a> <g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213"> fc',
+                currentFundingCycleId.toString(),
+                '        T',
+                timeLeftInDays.toString(),
+                ' </text> <!-- TEXT --> <text x="0" y="64" fill="#FF9213">                              </text> <!-- TEXT --> <text x="0" y="80" fill="#FF9213"> balance ',
+                balance.toString(),
+                '</text> <!-- TEXT --> <text x="0" y="96" fill="#FF9213"> overflow         ',
+                overflowString,
+                '</text> <!-- TEXT --> <text x="0" y="112" fill="#FF9213"> distribution         ',
+                distributionLimit,
+                '</text> <!-- TEXT --> <text x="0" y="128" fill="#FF9213"> supply        ',
+                totalSupply.toString(),
+                '</text> <!-- TEXT --> </g> </g> <defs> <filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"> <!-- brown gradient --> <stop stop-color="#3A0F0C"/> <stop offset="0.119792" stop-color="#44190F"/> <stop offset="0.848958" stop-color="#43190F"/> <stop offset="1" stop-color="#3A0E0B"/> </linearGradient> <clipPath id="clip0_150_56"> <rect width="289" height="403" /> </clipPath> </defs> </svg>'
+            )
+        );
+        parts[3] = string('"}');
+        // parts[4] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", ownerName, "\nFC ", currentFundingCycleId.toString(), "\nDays Left: ", timeLeftInDays.toString(), "\nToken Issued: ", tokenIssuedString, "\nToken address: ", jbTokenString, "\n"));
         string memory uri =
             // abi.encodePacked(
-                parts[0]
-                // Base64.encode(abi.encodePacked(parts[1], parts[2], parts[3]))
-            // )
-        ;
+                // parts[4]
+                string(Base64.encode(abi.encodePacked(parts[0],parts[1], parts[2], parts[3])));
+            // );
         return uri;
     }
 
