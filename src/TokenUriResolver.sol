@@ -79,7 +79,17 @@ contract TokenUriResolver is IJBTokenUriResolver
 
 
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
+    
+    // Balance
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
+    uint spacesLeft = 13-bytes(balance.toString()).length;
+    string memory balanceString;
+    // TODO turn padding into a function
+    for (uint i = 0; i < spacesLeft; i++) {
+        balanceString = string(abi.encodePacked(balanceString, " "));
+    }
+    balanceString = string(abi.encodePacked(balanceString, balance.toString(), "  "));
+
 
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
     
@@ -176,8 +186,8 @@ contract TokenUriResolver is IJBTokenUriResolver
                 // Line 2: Spacer
                 '<text x="0" y="64" fill="#FF9213">                              </text>',
                 // Line 3: Balance  
-                '<text x="0" y="80" fill="#FF9213">  balance                 ',
-                balance.toString(),
+                '<text x="0" y="80" fill="#FF9213">  balance      ',
+                balanceString,
                 '</text>',
                 // Line 4: Overflow
                 '<text x="0" y="96" fill="#FF9213">  overflow                 ',
