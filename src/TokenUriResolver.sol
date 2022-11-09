@@ -120,11 +120,11 @@ contract TokenUriResolver is IJBTokenUriResolver
             keccak256(abi.encode(string("")))
         ) {
             // Set projectName to handle
-            projectName = projectHandles.handleOf(_projectId);
+            projectName = string(abi.encodePacked("@", projectHandles.handleOf(_projectId)));
         } else {
             // Set projectName to name to 'Project #projectId'
             projectName = string(
-                abi.encodePacked("Juicebox Project # ", _projectId.toString())
+                abi.encodePacked("Juicebox Project #", _projectId.toString())
             );
         }
 
@@ -141,24 +141,42 @@ contract TokenUriResolver is IJBTokenUriResolver
                 ' ETH.", "image":"data:image/svg+xml;base64,'
             )
         );
+        // Each line (row) of the SVG is 30 monospaced characters long
+        // The first half of each line (15 chars) is the title
+        // The second half of each line (15 chars) is the value
+        // The first and last characters on the line are two spaces
+        // The first line (header) is an exception. 
         parts[2] = Base64.encode(
             abi.encodePacked(
-                '<svg width="289" height="403" viewBox="0 0 289 403" fill="none" xmlns="http://www.w3.org/2000/svg"> <style> text{ font-size: 16px; font-family: "Capsules", monospace; font-weight: 500; font-variant: small-caps; white-space: pre-wrap; } </style> <g clip-path="url(#clip0_150_56)"> <path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/> <!--brown background--> <rect width="289" height="22" fill="#FF9213"/> <!--orange header--> <g filter="url(#filter0_d_150_56)"> <a href="https://juicebox.money/@juicebox"> <!--project href--> <text x="16" y="16" fill="#642617">',
-                "@",
+                '<svg width="289" height="403" viewBox="0 0 289 403" fill="none" xmlns="http://www.w3.org/2000/svg"> <style> text{ font-size: 16px; font-family: "Capsules", monospace; font-weight: 500; font-variant: small-caps; white-space: pre-wrap; } </style> <g clip-path="url(#clip0_150_56)"> <path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/> <!--brown background--> <rect width="289" height="22" fill="#FF9213"/> <!--orange header--> <g filter="url(#filter0_d_150_56)"> <a href="https://juicebox.money/@juicebox"> <!--project href--> <text x="0" y="16" fill="#642617">',
+                // Line 0: Header
+                "  ",
                 projectName,
-                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a> <g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213"> fc',
+                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a>',
+                // Line 1: FC + Time left
+                '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc',
                 currentFundingCycleId.toString(),
-                '        T',
-                timeLeftInDays.toString(),
-                ' </text> <!-- TEXT --> <text x="0" y="64" fill="#FF9213">                              </text> <!-- TEXT --> <text x="0" y="80" fill="#FF9213"> balance ',
+                '                ',
+                timeLeftInDays.toString(), " days",
+                ' </text>',
+                // Line 2: Spacer
+                '<text x="0" y="64" fill="#FF9213">                              </text>',
+                // Line 3: Balance  
+                '<text x="0" y="80" fill="#FF9213">  balance          ',
                 balance.toString(),
-                '</text> <!-- TEXT --> <text x="0" y="96" fill="#FF9213"> overflow         ',
+                '</text>',
+                // Line 4: Overflow
+                '<text x="0" y="96" fill="#FF9213">  overflow                  ',
                 overflowString,
-                '</text> <!-- TEXT --> <text x="0" y="112" fill="#FF9213"> distribution         ',
+                '</text>',
+                // Line 5: Distribution Limit
+                '<text x="0" y="112" fill="#FF9213">  distribution              ',
                 distributionLimit,
-                '</text> <!-- TEXT --> <text x="0" y="128" fill="#FF9213"> supply        ',
+                '</text>',
+                // Line 6: Total Supply 
+                '<text x="0" y="128" fill="#FF9213">  supply                 ',
                 totalSupply.toString(),
-                '</text> <!-- TEXT --> </g> </g> <defs> <filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"> <!-- brown gradient --> <stop stop-color="#3A0F0C"/> <stop offset="0.119792" stop-color="#44190F"/> <stop offset="0.848958" stop-color="#43190F"/> <stop offset="1" stop-color="#3A0E0B"/> </linearGradient> <clipPath id="clip0_150_56"> <rect width="289" height="403" /> </clipPath> </defs> </svg>'
+                '</text></g> </g> <defs> <filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"> <!-- brown gradient --> <stop stop-color="#3A0F0C"/> <stop offset="0.119792" stop-color="#44190F"/> <stop offset="0.848958" stop-color="#43190F"/> <stop offset="1" stop-color="#3A0E0B"/> </linearGradient> <clipPath id="clip0_150_56"> <rect width="289" height="403" /> </clipPath> </defs> </svg>'
             )
         );
         parts[3] = string('"}');
@@ -166,6 +184,7 @@ contract TokenUriResolver is IJBTokenUriResolver
         string memory uri =
             // abi.encodePacked(
                 // parts[4]
+     
                 string(Base64.encode(abi.encodePacked(parts[0],parts[1], parts[2], parts[3])));
             // );
         return uri;
