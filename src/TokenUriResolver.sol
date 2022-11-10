@@ -69,7 +69,7 @@ contract TokenUriResolver is IJBTokenUriResolver
             str = string(abi.encodePacked(slice.slice(str,0,targetLength-2), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
         } else { // Pad strings shorter than target length
             string memory padding;
-            for(uint i=0; i<targetLength-length; i++){
+            for(uint i=0; i<=targetLength-length; i++){
                 padding = string(abi.encodePacked(padding,' ')); 
             }
             str = string.concat(padding, str);
