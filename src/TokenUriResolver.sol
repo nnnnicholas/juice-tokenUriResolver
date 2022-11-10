@@ -61,13 +61,13 @@ contract TokenUriResolver is IJBTokenUriResolver
     IJBController controller =
         IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
 
-    function pad(string memory str) internal view returns (string memory) {
+    function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
-        if(length>13){
+        if(length>targetLength){
             str = string(abi.encodePacked(slice.slice(str,0,12), unicode'…', '  '));
         } else {
             string memory padding;
-            for(uint i=0;i<13-length;i++){
+            for(uint i=0;i<targetLength-length;i++){
                 padding = string(abi.encodePacked(padding,' ')); // Add left-padding spaces 
             }
             str = string(abi.encodePacked(padding, str));
@@ -95,7 +95,7 @@ contract TokenUriResolver is IJBTokenUriResolver
     
     // Balance
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
-    string memory paddedBalance = pad(balance.toString()); // Project's ETH balance as a string
+    string memory paddedBalance = leftPad(balance.toString(),13); // Project's ETH balance as a string
 
     // Distribution Limit
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
@@ -107,10 +107,12 @@ contract TokenUriResolver is IJBTokenUriResolver
         distributionLimitCurrency = "USD";
     }
     string memory distributionLimit = string(abi.encodePacked((distributionLimitPreprocessed/10**18).toString(), " ", distributionLimitCurrency)); // Project's distribution limit
+    string memory paddedDistributionLimit = string(abi.encodePacked(leftPad(distributionLimit,13), '  '));
 
     // Supply
     uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
-    
+    string memory paddedTotalSupply = string(abi.encodePacked(leftPad(totalSupply.toString(),13),'  ')); // Project's token total supply as a string
+
     // JBToken ERC20
     IJBToken jbToken = tokenStore.tokenOf(_projectId); 
     bool tokenIssued;
@@ -133,9 +135,9 @@ contract TokenUriResolver is IJBTokenUriResolver
         ownerName = toAsciiString(owner);
     // }
 
-    uint256 overflow =singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
-    string memory overflowString = overflow.toString();
-
+    uint256 overflow = singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
+    string memory overflowString = string(abi.encodePacked(unicode'Ξ',overflow.toString()));
+    string memory paddedOverflow = string(abi.encodePacked(leftPad(overflowString,14), '  ')); // Length of 14 because Ξ counts as 2 characters, but has character width of 1
     // Project Handle
     string memory projectName;
         // If handle is set
@@ -182,7 +184,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 projectName,
                 '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a>',
                 // Line 1: FC + Time left
-                '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc',
+                '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc ',
                 currentFundingCycleId.toString(),
                 '                ',
                 timeLeftInDays.toString(), " days",
@@ -191,19 +193,19 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '<text x="0" y="64" fill="#FF9213">                              </text>',
                 // Line 3: Balance  
                 '<text x="0" y="80" fill="#FF9213">  balance      ',
-                paddedBalance,
+                paddedBalance, //TODO not working
                 '</text>',
                 // Line 4: Overflow
-                '<text x="0" y="96" fill="#FF9213">  overflow                 ',
-                overflowString,
+                '<text x="0" y="96" fill="#FF9213">  overflow     ',
+                paddedOverflow, // TODO not working  
                 '</text>',
                 // Line 5: Distribution Limit
-                '<text x="0" y="112" fill="#FF9213">  distribution         ',
-                distributionLimit,
+                '<text x="0" y="112" fill="#FF9213">  distr. limit ',
+                paddedDistributionLimit,
                 '</text>',
                 // Line 6: Total Supply 
-                '<text x="0" y="128" fill="#FF9213">  supply                   ',
-                totalSupply.toString(),
+                '<text x="0" y="128" fill="#FF9213">  total supply ',
+                paddedTotalSupply,
                 '</text></g> </g> <defs> <filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset/> <feGaussianBlur stdDeviation="2"/> <feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/> <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/> <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/> </filter> <linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"> <!-- brown gradient --> <stop stop-color="#3A0F0C"/> <stop offset="0.119792" stop-color="#44190F"/> <stop offset="0.848958" stop-color="#43190F"/> <stop offset="1" stop-color="#3A0E0B"/> </linearGradient> <clipPath id="clip0_150_56"> <rect width="289" height="403" /> </clipPath> </defs> </svg>'
             )
         );
