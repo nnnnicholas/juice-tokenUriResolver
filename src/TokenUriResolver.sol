@@ -230,7 +230,7 @@ contract TokenUriResolver is IJBTokenUriResolver
         parts[3] = string('"}');
         // parts[4] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", ownerName, "\nFC ", currentFundingCycleId.toString(), "\nDays Left: ", timeLeftInDays.toString(), "\nToken Issued: ", tokenIssuedString, "\nToken address: ", jbTokenString, "\n"));
         string memory uri =
-                string.concat(parts[0],Base64.encode(abi.encodePacked(parts[1], parts[2], parts[3])));
+                string.concat(parts[0], Base64.encode(abi.encodePacked(parts[1], parts[2], parts[3])));
         return uri;
     }
 

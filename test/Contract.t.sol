@@ -13,6 +13,10 @@ contract ContractTest is Test {
 
     function testGetUri() external {
         string memory x = c.getUri(305);
-        console.log(x);
+        string[] memory inputs = new string[](3);
+        inputs[0] = "node";
+        inputs[1] = "./open.js";
+        inputs[2] = x;
+        bytes memory res = vm.ffi(inputs);
     }
 }
