@@ -338,5 +338,5 @@ var json = JSON.parse(byteString.toString("utf8"));
 var image = json.image;
 var imageData = image.split(",")[1];
 var imageBuffer = Buffer.from(imageData, "base64");
-fs.writeFileSync("/tmp/onchain.svg", imageBuffer);
-open("/tmp/onchain.svg");
+fs.writeFileSync("./src/onchain.svg", imageBuffer);
+open("./src/onchain.svg");
