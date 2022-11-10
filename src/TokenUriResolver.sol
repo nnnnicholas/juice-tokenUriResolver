@@ -49,22 +49,20 @@ contract TokenUriResolver is IJBTokenUriResolver
     IJBProjects projects =
         IJBProjects(0xD8B4359143eda5B2d763E127Ed27c77addBc47d3);
     IJBDirectory directory =
-        IJBDirectory(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C);
+        IJBDirectory(0x65572FB928b46f9aDB7cfe5A4c41226F636161ea);
     IJBTokenStore tokenStore =
         IJBTokenStore(0x6FA996581D7edaABE62C15eaE19fEeD4F1DdDfE7);
     IJBProjectHandles projectHandles =
         IJBProjectHandles(0xE3c01E9Fd2a1dCC6edF0b1058B5757138EF9FfB6);
     IJBSingleTokenPaymentTerminalStore singleTokenPaymentTerminalStore =
-        IJBSingleTokenPaymentTerminalStore(
-            0xdF7Ca703225c5da79A86E08E03A206c267B7470C
-        );
+        IJBSingleTokenPaymentTerminalStore(0xdF7Ca703225c5da79A86E08E03A206c267B7470C);
     IJBController controller =
         IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
 
     function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
         if(length>targetLength){
-            str = string(abi.encodePacked(slice.slice(str,0,12), unicode'…', '  '));
+            str = string(abi.encodePacked(slice.slice(str,0,12), unicode'…'));
         } else {
             string memory padding;
             for(uint i=0;i<targetLength-length;i++){
@@ -94,8 +92,8 @@ contract TokenUriResolver is IJBTokenUriResolver
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
     
     // Balance
-    uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
-    string memory paddedBalance = leftPad(balance.toString(),13); // Project's ETH balance as a string
+    uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId)/10**18; // Project's ETH balance //TODO Try/catch    
+    string memory paddedBalance = string(abi.encodePacked(leftPad(balance.toString(),13),'  ')); // Project's ETH balance as a string
 
     // Distribution Limit
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
