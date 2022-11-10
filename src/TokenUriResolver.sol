@@ -26,7 +26,6 @@ contract StringSlicer{
     function slice(string calldata _str, uint _start, uint _end) external pure returns (string memory) {
             return string(bytes(_str)[_start:_end]);
     }
-
 }
 
 contract TokenUriResolver is IJBTokenUriResolver
@@ -59,10 +58,15 @@ contract TokenUriResolver is IJBTokenUriResolver
     IJBController controller =
         IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
 
+    /// @notice Transform strings to target length by abbreviation or left padding with spaces.
+    /// @dev Shortens long strings to 13 characters including an ellipsis and adds left padding spaces to short strings
+    /// @param str The string to transform
+    /// @param targetLength The length of the string to return
+    /// @return string The transformed string
     function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
         if(length>targetLength){
-            str = string(abi.encodePacked(slice.slice(str,0,12), unicode'…'));
+            str = string(abi.encodePacked(slice.slice(str,0,targetLength), unicode'…')); // TODO fix
         } else {
             string memory padding;
             for(uint i=0;i<targetLength-length;i++){
