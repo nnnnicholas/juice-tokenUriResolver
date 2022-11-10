@@ -95,17 +95,17 @@ contract TokenUriResolver is IJBTokenUriResolver
     uint256 timeLeft;
     string memory paddedTimeLeft;
     if(duration == 0){
-        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'⏳ ', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
+        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
     } else{
         timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
         if(timeLeft > 2 days){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'⏳ ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
         } else if(timeLeft > 2 hours){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'⏳ ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
         } else if(timeLeft > 2 minutes){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'⏳ ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
         } else {
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'⏳ ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
         }
     }
 
