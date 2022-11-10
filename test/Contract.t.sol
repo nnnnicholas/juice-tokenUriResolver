@@ -13,7 +13,6 @@ contract ContractTest is Test {
 
     function testGetUri() external {
         string memory x = c.getUri(305);
-
         string[] memory inputs = new string[](3);
         inputs[0] = "node";
         inputs[1] = "./open.js";

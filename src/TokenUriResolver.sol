@@ -59,20 +59,20 @@ contract TokenUriResolver is IJBTokenUriResolver
         IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
 
     /// @notice Transform strings to target length by abbreviation or left padding with spaces.
-    /// @dev Shortens long strings to 13 characters including an ellipsis and adds left padding spaces to short strings
+    /// @dev Shortens long strings to 13 characters including an ellipsis and adds left padding spaces to short strings. Allows variable target length to account for strings that have unicode characters that are longer than 1 byte but only take up 1 character space.
     /// @param str The string to transform
     /// @param targetLength The length of the string to return
     /// @return string The transformed string
     function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
-        if(length>targetLength){
-            str = string(abi.encodePacked(slice.slice(str,0,targetLength), unicode'…')); // TODO fix
-        } else {
+        if(length>targetLength){ // Shorten strings strings longer than target length
+            str = string(abi.encodePacked(slice.slice(str,0,targetLength-2), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
+        } else { // Pad strings shorter than target length
             string memory padding;
-            for(uint i=0;i<targetLength-length;i++){
-                padding = string(abi.encodePacked(padding,' ')); // Add left-padding spaces 
+            for(uint i=0; i<=targetLength-length; i++){
+                padding = string(abi.encodePacked(padding,' ')); 
             }
-            str = string(abi.encodePacked(padding, str));
+            str = string.concat(padding, str);
         }
         return str;
     }
@@ -87,18 +87,34 @@ contract TokenUriResolver is IJBTokenUriResolver
     // FC#
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
     uint256 currentFundingCycleId = fundingCycle.number; // Project's current funding cycle id
-    // Duration
+    
+    // Time Left
+    // TODO solve for no FC duration
     uint256 start = fundingCycle.start; // Project's funding cycle start time
     uint256 duration = fundingCycle.duration; // Project's current funding cycle duration
-    uint256 timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
-    uint256 timeLeftInDays = timeLeft / 86400; // Project's current funding cycle time left in days //TODO Improve for hours
+    uint256 timeLeft;
+    string memory paddedTimeLeft;
+    if(duration == 0){
+        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
+    } else{
+        timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
+        if(timeLeft > 2 days){
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
+        } else if(timeLeft > 2 hours){
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
+        } else if(timeLeft > 2 minutes){
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
+        } else {
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
+        }
+    }
 
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
     
     // Balance
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId)/10**18; // Project's ETH balance //TODO Try/catch    
-    string memory paddedBalance = string(abi.encodePacked(leftPad(balance.toString(),13),'  ')); // Project's ETH balance as a string
-
+    string memory paddedBalance = string(abi.encodePacked(leftPad(string.concat(balance.toString()),13),'  ')); // Project's ETH balance as a string
+    
     // Distribution Limit
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
     string memory distributionLimitCurrency;
@@ -184,15 +200,15 @@ contract TokenUriResolver is IJBTokenUriResolver
                 // Line 0: Header
                 "  ",
                 projectName,
-                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a>',
+                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">',unicode'','</text> <!-- capsules juicebox symbol &#57345; --> </a>',
                 // Line 1: FC + Time left
-                '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc ',
+                '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc ', //TODO pad right
                 currentFundingCycleId.toString(),
-                '                ',
-                timeLeftInDays.toString(), " days",
+                '          ',
+                paddedTimeLeft,
                 ' </text>',
                 // Line 2: Spacer
-                '<text x="0" y="64" fill="#FF9213">                              </text>',
+                '<text x="0" y="64" fill="#FF9213">',unicode'                              ','</text>',
                 // Line 3: Balance  
                 '<text x="0" y="80" fill="#FF9213">  balance      ',
                 paddedBalance, //TODO not working
@@ -214,15 +230,9 @@ contract TokenUriResolver is IJBTokenUriResolver
         parts[3] = string('"}');
         // parts[4] = Base64.encode(abi.encodePacked("\nname: ", projectName, "\nbalance: ", balance.toString(), "\noverflow: ", overflow.toString(), "\ndist limit: ", distributionLimit, "\ntotal supply: ", totalSupply.toString(), "\nowner: ", ownerName, "\nFC ", currentFundingCycleId.toString(), "\nDays Left: ", timeLeftInDays.toString(), "\nToken Issued: ", tokenIssuedString, "\nToken address: ", jbTokenString, "\n"));
         string memory uri =
-            // abi.encodePacked(
-                // parts[4]
-     
                 string.concat(parts[0], Base64.encode(abi.encodePacked(parts[1], parts[2], parts[3])));
-            // );
         return uri;
     }
-
-    
 
 // borrowed from https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
 function toAsciiString(address x) internal pure returns (string memory) {
