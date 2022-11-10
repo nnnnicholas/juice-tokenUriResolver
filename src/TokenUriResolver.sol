@@ -66,7 +66,7 @@ contract TokenUriResolver is IJBTokenUriResolver
     function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
         if(length>targetLength){ // Shorten strings strings longer than target length
-            str = string(abi.encodePacked(slice.slice(str,0,targetLength-1), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
+            str = string(abi.encodePacked(slice.slice(str,0,targetLength-2), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
         } else { // Pad strings shorter than target length
             string memory padding;
             for(uint i=0; i<targetLength-length; i++){
@@ -95,17 +95,17 @@ contract TokenUriResolver is IJBTokenUriResolver
     uint256 timeLeft;
     string memory paddedTimeLeft;
     if(duration == 0){
-        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
+        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
     } else{
         timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
         if(timeLeft > 2 days){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
         } else if(timeLeft > 2 hours){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
         } else if(timeLeft > 2 minutes){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
         } else {
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'U+23F3', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
         }
     }
 
@@ -113,8 +113,8 @@ contract TokenUriResolver is IJBTokenUriResolver
     
     // Balance
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId)/10**18; // Project's ETH balance //TODO Try/catch    
-    string memory paddedBalance = string(abi.encodePacked(leftPad(balance.toString(),13),'  ')); // Project's ETH balance as a string
-
+    string memory paddedBalance = string(abi.encodePacked(leftPad(string.concat(balance.toString()),13),'  ')); // Project's ETH balance as a string
+    
     // Distribution Limit
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
     string memory distributionLimitCurrency;
@@ -200,7 +200,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 // Line 0: Header
                 "  ",
                 projectName,
-                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a>',
+                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">',unicode'','</text> <!-- capsules juicebox symbol &#57345; --> </a>',
                 // Line 1: FC + Time left
                 '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc ', //TODO pad right
                 currentFundingCycleId.toString(),
