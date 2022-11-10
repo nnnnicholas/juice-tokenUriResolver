@@ -61,6 +61,20 @@ contract TokenUriResolver is IJBTokenUriResolver
     IJBController controller =
         IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
 
+    function pad(string memory str) internal view returns (string memory) {
+        uint length = bytes(str).length;
+        if(length>13){
+            str = string(abi.encodePacked(slice.slice(str,0,12), unicode'…', '  '));
+        } else {
+            string memory padding;
+            for(uint i=0;i<13-length;i++){
+                padding = string(abi.encodePacked(padding,' ')); // Add left-padding spaces 
+            }
+            str = string(abi.encodePacked(padding, str));
+        }
+        return str;
+    }
+
     function getUri(uint256 _projectId)
         external
         view
@@ -77,23 +91,14 @@ contract TokenUriResolver is IJBTokenUriResolver
     uint256 timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
     uint256 timeLeftInDays = timeLeft / 86400; // Project's current funding cycle time left in days //TODO Improve for hours
 
-
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
     
     // Balance
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId); // Project's ETH balance //TODO Try/catch    
-    uint spacesLeft = 13-bytes(balance.toString()).length;
-    string memory balanceString;
-    // TODO turn padding into a function
-    for (uint i = 0; i < spacesLeft; i++) {
-        balanceString = string(abi.encodePacked(balanceString, " "));
-    }
-    balanceString = string(abi.encodePacked(balanceString, balance.toString(), "  "));
+    string memory paddedBalance = pad(balance.toString()); // Project's ETH balance as a string
 
-
-    uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
-    
     // Distribution Limit
+    uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
     string memory distributionLimitCurrency;
     (uint256 distributionLimitPreprocessed, uint256 distributionLimitCurrencyPreprocessed) = controller.distributionLimitOf(_projectId, latestConfiguration, primaryEthPaymentTerminal, JBTokens.ETH); // Project's distribution limit
     if (distributionLimitCurrencyPreprocessed == 1){
@@ -118,8 +123,7 @@ contract TokenUriResolver is IJBTokenUriResolver
     }
     if(tokenIssued){tokenIssuedString = "True";} else {tokenIssuedString = "False";}
     
-
-    // Owner 
+     // Owner 
     address owner = projects.ownerOf(_projectId); // Project's owner
     string memory ownerName;
     // TODO Use AddressToENSString library (wip) to resolve ENS address onchain
@@ -176,7 +180,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 // Line 0: Header
                 "  ",
                 projectName,
-                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">\nNNNNU+E000  </text> <!-- capsules juicebox symbol &#57345; --> </a>',
+                '</text> </a> </g> <a href="https://juicebox.money"> <text x="257" y="16" fill="#642617">J</text> <!-- capsules juicebox symbol &#57345; --> </a>',
                 // Line 1: FC + Time left
                 '<g filter="url(#filter1_d_150_56)"> <!-- outer glow --> <text x="0" y="48" fill="#FF9213">  fc',
                 currentFundingCycleId.toString(),
@@ -187,7 +191,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '<text x="0" y="64" fill="#FF9213">                              </text>',
                 // Line 3: Balance  
                 '<text x="0" y="80" fill="#FF9213">  balance      ',
-                balanceString,
+                paddedBalance,
                 '</text>',
                 // Line 4: Overflow
                 '<text x="0" y="96" fill="#FF9213">  overflow                 ',
