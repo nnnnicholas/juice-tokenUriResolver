@@ -12,7 +12,12 @@ contract ContractTest is Test {
     // IJBProjects jbProjects = IJBProjects(0xD8B4359143eda5B2d763E127Ed27c77addBc47d3); // mainnet
 
     function testGetUri() external {
-        string memory x = string(Base64.decode(c.getUri(305)));
-        console.log(x);
+        string memory x = c.getUri(305);
+
+        string[] memory inputs = new string[](3);
+        inputs[0] = "node";
+        inputs[1] = "./open.js";
+        inputs[2] = x;
+        bytes memory res = vm.ffi(inputs);
     }
 }

@@ -217,7 +217,7 @@ contract TokenUriResolver is IJBTokenUriResolver
             // abi.encodePacked(
                 // parts[4]
      
-                string(Base64.encode(abi.encodePacked(parts[0],parts[1], parts[2], parts[3])));
+                string.concat(parts[0], Base64.encode(abi.encodePacked(parts[1], parts[2], parts[3])));
             // );
         return uri;
     }

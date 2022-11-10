@@ -2,7 +2,7 @@
 
 To test
 
-`forge test --fork-url $ETH_RPC_URL -vvvv --via-ir --match-test GetUri`
+`forge test --ffi --fork-url $ETH_RPC_URL -vvvv --via-ir --match-test GetUri`
 
 
 ![](src/tokenuriresolver.png)
