@@ -8,5 +8,5 @@ To test
 ![](src/tokenuriresolver.png)
 
 
-https://www.figma.com/file/oeZ2r92q2aNqosuc3orfRS/Untitled?node-id=1%3A2
+https://www.figma.com/file/8fciDQxE3Owl7Ds7xWr4n7/tokenuri?t=B04Scn4y51fsGTbp-6
 https://github.com/nnnnicholas/juice-tokenUriResolver
