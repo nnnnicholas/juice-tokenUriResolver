@@ -99,13 +99,13 @@ contract TokenUriResolver is IJBTokenUriResolver
     } else{
         timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
         if(timeLeft > 2 days){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 14), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 11), '  ');
         } else if(timeLeft > 2 hours){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 14), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 11), '  ');
         } else if(timeLeft > 2 minutes){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 14), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 11), '  ');
         } else {
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 14), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 11), '  ');
         }
     }
 
