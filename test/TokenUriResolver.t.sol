@@ -4,7 +4,8 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/TokenUriResolver.sol";
 // import "juice-project-handles/interfaces/IJBProjectHandles.sol";
-import "base64/base64.sol";
+// import "base64/base64.sol";
+
 
 contract ContractTest is Test {
     TokenUriResolver c = new TokenUriResolver();
@@ -19,4 +20,5 @@ contract ContractTest is Test {
         inputs[2] = x;
         bytes memory res = vm.ffi(inputs);
     }
+
 }

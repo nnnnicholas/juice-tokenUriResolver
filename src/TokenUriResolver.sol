@@ -66,7 +66,7 @@ contract TokenUriResolver is IJBTokenUriResolver
     function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
         if(length>targetLength){ // Shorten strings strings longer than target length
-            str = string(abi.encodePacked(slice.slice(str,0,targetLength-2), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
+            str = string(abi.encodePacked(slice.slice(str,0,targetLength-1), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
         } else { // Pad strings shorter than target length
             string memory padding;
             for(uint i=0; i<=targetLength-length; i++){
@@ -150,7 +150,7 @@ contract TokenUriResolver is IJBTokenUriResolver
     // try resolver.name(reverseRegistrar.node(owner)) returns (string memory _ownerName) {
     //     ownerName = _ownerName;
     // } catch {
-        ownerName = toAsciiString(owner);
+        ownerName = string.concat('0x', slice.slice(toAsciiString(owner), 0,4),unicode'…', slice.slice(toAsciiString(owner),36,40)); // Abbreviate owner address
     // }
 
     uint256 overflow = singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
@@ -196,37 +196,43 @@ contract TokenUriResolver is IJBTokenUriResolver
         // The first line (header) is an exception. 
         parts[2] = Base64.encode(
             abi.encodePacked(
-                '<svg width="289" height="403" viewBox="0 0 289 403" fill="none" xmlns="http://www.w3.org/2000/svg"><style>text{font-size:16px;font-family:"Capsules",monospace;font-weight:500;font-variant:small-caps;white-space:pre-wrap;}</style><g clip-path="url(#clip0_150_56)"><path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/><rect width="289" height="22" fill="#FF9213"/><g filter="url(#filter0_d_150_56)"><a href="https://juicebox.money/v2/p/',
+                '<svg width="289" height="403" viewBox="0 0 289 403" xmlns="http://www.w3.org/2000/svg"><style>a,a:visited{fill:inherit;}text{font-size:16px;fill:#FF9213;font-family:"Capsules",monospace;font-weight:500;font-variant:small-caps;white-space:pre-wrap;}#header text{fill:#642617;}</style><g clip-path="url(#clip0_150_56)"><path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/><rect width="289" height="22" fill="#FF9213"/><g id="header"><a href="https://juicebox.money/v2/p/',
                 _projectId.toString(),
-                '"><text x="0" y="16" fill="#642617">',
+                '"><text x="0" y="16">',
                 // Line 0: Header
                 "  ",
                 projectName,
-                '</text></a></g><a href="https://juicebox.money"><text x="257" y="16" fill="#642617">',unicode'','</text> <!-- capsules juicebox symbol &#57345; --> </a>',
+                '</text></a><a href="https://juicebox.money"><text x="257" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
-                '<g filter="url(#filter1_d_150_56)"><text x="0" y="48" fill="#FF9213">  fc ', //TODO pad right
+                '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">  fc ', //TODO pad right
                 currentFundingCycleId.toString(),
                 '          ',
                 paddedTimeLeft,
                 ' </text>',
                 // Line 2: Spacer
-                '<text x="0" y="64" fill="#FF9213">',unicode'                              ','</text>',
+                '<text x="0" y="64">',unicode'                              ','</text>',
                 // Line 3: Balance  
-                '<text x="0" y="80" fill="#FF9213">  balance      ',
+                '<text x="0" y="80">  balance      ',
                 paddedBalance, //TODO not working
                 '</text>',
                 // Line 4: Overflow
-                '<text x="0" y="96" fill="#FF9213">  overflow     ',
+                '<text x="0" y="96">  overflow     ',
                 paddedOverflow, // TODO not working  
                 '</text>',
                 // Line 5: Distribution Limit
-                '<text x="0" y="112" fill="#FF9213">  distr. limit ',
+                '<text x="0" y="112">  distr. limit ',
                 paddedDistributionLimit,
                 '</text>',
                 // Line 6: Total Supply 
-                '<text x="0" y="128" fill="#FF9213">  total supply ',
+                '<text x="0" y="128">  total supply ',
                 paddedTotalSupply,
-                '</text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#3A0F0C"/><stop offset="0.119792" stop-color="#44190F"/><stop offset="0.848958" stop-color="#43190F"/><stop offset="1" stop-color="#3A0E0B"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
+                '</text>',
+                // Line 7: Project Owner
+                '<text x="0" y="144">  project owner ',
+                '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
+                '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
+                ownerName,
+                '</a></text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#3A0F0C"/><stop offset="0.119792" stop-color="#44190F"/><stop offset="0.848958" stop-color="#43190F"/><stop offset="1" stop-color="#3A0E0B"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
             )
         );
         parts[3] = string('"}');
