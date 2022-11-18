@@ -95,17 +95,17 @@ contract TokenUriResolver is IJBTokenUriResolver
     uint256 timeLeft;
     string memory paddedTimeLeft;
     if(duration == 0){
-        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'not set'), 14), '  '); // If the funding cycle has no duration, show infinite duration
+        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
     } else{
         timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
         if(timeLeft > 2 days){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 11), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
         } else if(timeLeft > 2 hours){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 11), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
         } else if(timeLeft > 2 minutes){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 11), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
         } else {
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 11), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
         }
     }
 
@@ -208,27 +208,27 @@ contract TokenUriResolver is IJBTokenUriResolver
                 currentFundingCycleId.toString(),
                 '          ',
                 paddedTimeLeft,
-                ' </text>',
+                '</text>',
                 // Line 2: Spacer
                 '<text x="0" y="64">',unicode'                              ','</text>',
                 // Line 3: Balance  
-                '<text x="0" y="80">  balance      ',
+                '<text x="0" y="80">  balance     ',
                 paddedBalance, //TODO not working
                 '</text>',
                 // Line 4: Overflow
-                '<text x="0" y="96">  overflow     ',
+                '<text x="0" y="96">  overflow    ',
                 paddedOverflow, // TODO not working  
                 '</text>',
                 // Line 5: Distribution Limit
-                '<text x="0" y="112">  distr. limit ',
+                '<text x="0" y="112">  distr. limit',
                 paddedDistributionLimit,
                 '</text>',
                 // Line 6: Total Supply 
-                '<text x="0" y="128">  total supply ',
+                '<text x="0" y="128">  total supply',
                 paddedTotalSupply,
                 '</text>',
                 // Line 7: Project Owner
-                '<text x="0" y="144">  project owner ',
+                '<text x="0" y="144">  project owner',
                 '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
                 '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
                 ownerName,
