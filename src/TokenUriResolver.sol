@@ -61,18 +61,35 @@ contract TokenUriResolver is IJBTokenUriResolver
     /// @param str The string to transform
     /// @param targetLength The length of the string to return
     /// @return string The transformed string
-    function leftPad(string memory str, uint targetLength) internal view returns (string memory) {
+    function pad(bool left, string memory str, uint targetLength) internal view returns (string memory) {
         uint length = bytes(str).length;
-        if(length>targetLength){ // Shorten strings strings longer than target length
-            str = string(abi.encodePacked(slice.slice(str,0,targetLength-1), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
-        } else { // Pad strings shorter than target length
-            string memory padding;
-            for(uint i=0; i<=targetLength-length; i++){
-                padding = string(abi.encodePacked(padding,' ')); 
+        if(left){ // Left pad
+            if(length>targetLength){ // Shorten strings strings longer than target length
+                str = string(abi.encodePacked(slice.slice(str,0,targetLength-1), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
+            } else if (length == targetLength){
+                return str;
+                } else { // Pad strings shorter than target length
+                string memory padding;
+                for(uint i=0; i<=targetLength-length; i++){
+                    padding = string.concat(padding, ' ');
+                }
+                str = string.concat(padding, str);
             }
-            str = string.concat(padding, str);
+            return str;
+        } else { // Right pad
+            if(length>targetLength){
+                str = string(abi.encodePacked(slice.slice(str,0,targetLength-1), unicode'…')); // Shortens to 1 character less than target length and adds an ellipsis unicode character
+            } else if (length == targetLength){
+                return str;
+                } else {
+                    string memory padding;
+                    for(uint i=0; i<=targetLength-length; i++){
+                        padding = string.concat(padding, ' ');
+                    }
+                    str = string.concat(str, padding);
+                }
+            return str;
         }
-        return str;
     }
 
     function getUri(uint256 _projectId)
@@ -85,25 +102,30 @@ contract TokenUriResolver is IJBTokenUriResolver
     // FC#
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
     uint256 currentFundingCycleId = fundingCycle.number; // Project's current funding cycle id
-    
+    string memory fundingCycleIdString = currentFundingCycleId.toString();
+    string memory paddedFCRight = pad(false, string.concat(unicode'  ꜰc ', fundingCycleIdString), 14 + bytes(fundingCycleIdString).length);
     // Time Left
-    // TODO solve for no FC duration
     uint256 start = fundingCycle.start; // Project's funding cycle start time
     uint256 duration = fundingCycle.duration; // Project's current funding cycle duration
     uint256 timeLeft;
     string memory paddedTimeLeft;
-    if(duration == 0){
-        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'ɴoᴛ sᴇᴛ'), 20), '  '); // If the funding cycle has no duration, show infinite duration // N = 2, T = 3, E = 3, T = 3
+    string memory countString;
+    if(duration == 0){ 
+        paddedTimeLeft = string.concat(pad(true, string.concat(unicode' ɴoᴛ sᴇᴛ'), 21), '  '); // If the funding cycle has no duration, show infinite duration //  = 3, N = 2, T = 3, E = 3, T = 3
     } else{
         timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
         if(timeLeft > 2 days){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), unicode' ᴅᴀʏs'), 18), '  '); // ᴅ = 3, ᴀ = 3, ʏ = 2
+            countString = (timeLeft/ 1 days).toString();
+            paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ᴅᴀʏs'), 18 + bytes(countString).length), '  '); // ᴅ = 3, ᴀ = 3, ʏ = 2
         } else if(timeLeft > 2 hours){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), unicode' ʜouʀs'), 17), '  '); // ʜ = 2, ʀ = 2
+            countString = (timeLeft/ 1 hours).toString(); // 12 bytes || 8 visual + countString
+            paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ʜouʀs'), 14 + bytes(countString).length), '  '); // ʜ = 2, ʀ = 2
         } else if(timeLeft > 2 minutes){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), unicode' ᴍɪɴuᴛᴇs'), 21), '  '); // ᴍ = 3, ɪ = 2, ɴ = 2, ᴛ = 3, ᴇ = 3
+            countString = (timeLeft/ 1 minutes).toString();
+            paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ᴍɪɴuᴛᴇs'), 21 + bytes(countString).length), '  '); // ᴍ = 3, ɪ = 2, ɴ = 2, ᴛ = 3, ᴇ = 3
         } else {
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), unicode' sᴇcoɴᴅs'), 18), '  '); // E = 3, N = 2, D = 3
+            countString =  (timeLeft/ 1 seconds).toString();
+            paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' sᴇcoɴᴅs'), 18 + bytes(countString).length), '  '); // E = 3, ɴ = 2, D = 3
         }
     }
 
@@ -111,23 +133,26 @@ contract TokenUriResolver is IJBTokenUriResolver
     
     // Balance
     uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId)/10**18; // Project's ETH balance //TODO Try/catch    
-    string memory paddedBalance = string(abi.encodePacked(leftPad(string.concat(balance.toString()),13),'  ')); // Project's ETH balance as a string
+    string memory paddedBalanceLeft = string.concat(pad(true, string.concat(unicode'Ξ',balance.toString()),13),'  '); // Project's ETH balance as a string
+    string memory paddedBalanceRight = pad(false,unicode'  ʙᴀʟᴀɴcᴇ     ', 23); // ʙ = 2, ᴀ = 3, ʟ = 2, ᴀ = 3, ɴ = 2, E = 3
     
     // Distribution Limit
     uint256 latestConfiguration = fundingCycleStore.latestConfigurationOf(_projectId); // Get project's current FC  configuration 
     string memory distributionLimitCurrency;
     (uint256 distributionLimitPreprocessed, uint256 distributionLimitCurrencyPreprocessed) = controller.distributionLimitOf(_projectId, latestConfiguration, primaryEthPaymentTerminal, JBTokens.ETH); // Project's distribution limit
     if (distributionLimitCurrencyPreprocessed == 1){
-        distributionLimitCurrency = "ETH";
+        distributionLimitCurrency = unicode'Ξ';
     } else {
-        distributionLimitCurrency = "USD";
+        distributionLimitCurrency = '$';
     }
-    string memory distributionLimit = string(abi.encodePacked((distributionLimitPreprocessed/10**18).toString(), " ", distributionLimitCurrency)); // Project's distribution limit
-    string memory paddedDistributionLimit = string(abi.encodePacked(leftPad(distributionLimit,13), '  '));
+    string memory distributionLimit = string.concat(distributionLimitCurrency, (distributionLimitPreprocessed/10**18).toString()); // Project's distribution limit
+    string memory paddedDistributionLimitLeft = string.concat(pad(true,distributionLimit,11+bytes(distributionLimitCurrency).length), '  ');
+    string memory paddedDistributionLimitRight = string.concat(pad(false, unicode'  ᴅɪsᴛʀ. ʟɪᴍɪᴛ', 27)); // ᴅ = 3, ɪ = 2, T = 3, ʀ = 2, ʟ = 2, ɪ = 2, ᴍ = 3, ɪ = 2, T = 3
 
     // Supply
     uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
-    string memory paddedTotalSupply = string(abi.encodePacked(leftPad(totalSupply.toString(),13),'  ')); // Project's token total supply as a string
+    string memory paddedTotalSupplyLeft = string.concat(pad(true,totalSupply.toString(),12),'  '); // Project's token total supply as a string
+    string memory paddedTotalSupplyRight = pad(false,unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',27);
 
     // JBToken ERC20
     IJBToken jbToken = tokenStore.tokenOf(_projectId); 
@@ -151,9 +176,13 @@ contract TokenUriResolver is IJBTokenUriResolver
         ownerName = string.concat('0x', slice.slice(toAsciiString(owner), 0,4),unicode'…', slice.slice(toAsciiString(owner),36,40)); // Abbreviate owner address
     // }
 
+    string memory projectOwnerPaddedRight = pad(false, unicode'  ᴘʀoᴊᴇcᴛ owɴᴇʀ', 28);
+
     uint256 overflow = singleTokenPaymentTerminalStore.currentTotalOverflowOf(_projectId,0,1); // Project's overflow to 0 decimals
-    string memory overflowString = string(abi.encodePacked(unicode'Ξ',overflow.toString()));
-    string memory paddedOverflow = string(abi.encodePacked(leftPad(overflowString,14), '  ')); // Length of 14 because Ξ counts as 2 characters, but has character width of 1
+    string memory overflowString = string.concat(unicode'Ξ',overflow.toString());
+    string memory paddedOverflowLeft = string.concat(pad(true,overflowString,13), '  '); // Length of 14 because Ξ counts as 2 characters, but has character width of 1
+    string memory paddedOverflowRight = string.concat(pad(false,unicode'  ovᴇʀꜰʟow    ', 20)); //  E = 3, ʀ = 2, ꜰ = 3, ʟ = 2
+
     // Project Handle
     string memory projectName;
         // If handle is set
@@ -204,9 +233,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '</text></a><a href="https://juicebox.money"><text x="257" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
                 '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">',
-                unicode'  ꜰc ', // ꜰ = 3 TODO pad right
-                currentFundingCycleId.toString(),
-                '        ',
+                paddedFCRight,
                 paddedTimeLeft,
                 '</text>',
                 // Line 2: Spacer
@@ -215,30 +242,32 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '</text>',
                 // Line 3: Balance  
                 '<text x="0" y="80">',
-                unicode'  ʙᴀʟᴀɴcᴇ     ',
-                paddedBalance, //TODO not working
+                paddedBalanceRight,
+                paddedBalanceLeft, //TODO not working
                 '</text>',
                 // Line 4: Overflow
-                '<text x="0" y="96">',unicode'  ovᴇʀꜰʟow    ',
-                paddedOverflow, // TODO not working  
+                '<text x="0" y="96">',
+                paddedOverflowRight,
+                paddedOverflowLeft, // TODO not working  
                 '</text>',
                 // Line 5: Distribution Limit
                 '<text x="0" y="112">',
-                unicode'  ᴅɪsᴛʀ. ʟɪᴍɪᴛ',
-                paddedDistributionLimit,
+                paddedDistributionLimitRight,
+                paddedDistributionLimitLeft,
                 '</text>',
                 // Line 6: Total Supply 
                 '<text x="0" y="128">',
-                unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',
-                paddedTotalSupply,
+                paddedTotalSupplyRight,
+                paddedTotalSupplyLeft,
                 '</text>',
                 // Line 7: Project Owner
                 '<text x="0" y="144">',
-                unicode'  ᴘʀoᴊᴇcᴛ owɴᴇʀ',
-                '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
-                '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
-                ownerName,
-                '</a></text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#3A0F0C"/><stop offset="0.119792" stop-color="#44190F"/><stop offset="0.848958" stop-color="#43190F"/><stop offset="1" stop-color="#3A0E0B"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
+                projectOwnerPaddedRight,
+                // '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
+                // '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
+                // ownerName,
+                // '</a>',
+                '</text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#3A0F0C"/><stop offset="0.119792" stop-color="#44190F"/><stop offset="0.848958" stop-color="#43190F"/><stop offset="1" stop-color="#3A0E0B"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
             )
         );
         parts[3] = string('"}');
