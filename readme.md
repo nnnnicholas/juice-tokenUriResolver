@@ -2,8 +2,9 @@
 
 To test
 
-`forge test --ffi --fork-url $ETH_RPC_URL -vvvv --via-ir --match-test GetUri`
+`forge test --fork-url $ETH_RPC_URL -v --via-ir --ffi --fork-block-number BLOCK_NUMBER --match-test Get`
 
+replace `$ETH_RPC_URL` and `BLOCK_NUMBER` with your preferred values
 
 ![](src/tokenuriresolver.png)
 
