@@ -203,13 +203,15 @@ contract TokenUriResolver is IJBTokenUriResolver
                 projectName,
                 '</text></a><a href="https://juicebox.money"><text x="257" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
-                '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">  fc ', //TODO pad right
+                '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">',
+                unicode'  ꜰc ', //TODO pad right
                 currentFundingCycleId.toString(),
                 '          ',
                 paddedTimeLeft,
                 '</text>',
                 // Line 2: Spacer
-                '<text x="0" y="64">',unicode'                              ',
+                '<text x="0" y="64">',
+                unicode'                              ',
                 '</text>',
                 // Line 3: Balance  
                 '<text x="0" y="80">',
