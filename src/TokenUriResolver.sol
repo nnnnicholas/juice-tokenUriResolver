@@ -39,10 +39,8 @@ contract TokenUriResolver is IJBTokenUriResolver
 
     ITypeface capsulesTypeface =
         ITypeface(0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A); // Capsules typeface
-    bytes fontSource = // Capsules font source
-        ITypeface(capsulesTypeface).sourceOf(
-            Font({weight: 400, style: "normal"})
-        );
+    bytes fontSource = ITypeface(capsulesTypeface).sourceOf(Font({weight: 500, style: "normal"})); // Capsules font source
+
     IJBFundingCycleStore fundingCycleStore =
         IJBFundingCycleStore(0x6f18cF9173136c0B5A6eBF45f19D58d3ff2E17e6);
     IJBProjects projects =
@@ -196,11 +194,12 @@ contract TokenUriResolver is IJBTokenUriResolver
         // The first line (header) is an exception. 
         parts[2] = Base64.encode(
             abi.encodePacked(
-                '<svg width="289" height="403" viewBox="0 0 289 403" xmlns="http://www.w3.org/2000/svg"><style>a,a:visited{fill:inherit;}text{font-size:16px;fill:#FF9213;font-family:"Capsules",monospace;font-weight:500;font-variant:small-caps;white-space:pre-wrap;}#header text{fill:#642617;}</style><g clip-path="url(#clip0_150_56)"><path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/><rect width="289" height="22" fill="#FF9213"/><g id="header"><a href="https://juicebox.money/v2/p/',
+                '<svg width="289" height="403" viewBox="0 0 289 403" xmlns="http://www.w3.org/2000/svg"><style>@font-face{font-family:"Capsules-500";src:url(data:font/truetype;charset=utf-8;base64,',
+                fontSource, // import Capsules typeface
+                ');format("opentype");}a,a:visited,a:hover{fill:inherit;text-decoration:none;}text{font-size:16px;fill:#FF9213;font-family:"Capsules-500",monospace;font-weight:500;white-space:pre-wrap;}#header text{fill:#642617;}</style><g clip-path="url(#clip0_150_56)"><path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/><rect width="289" height="22" fill="#FF9213"/><g id="header"><a href="https://juicebox.money/v2/p/',
                 _projectId.toString(),
-                '"><text x="0" y="16">',
-                // Line 0: Header
-                "  ",
+                '">',// Line 0: Header
+                '<text x="16" y="16">',
                 projectName,
                 '</text></a><a href="https://juicebox.money"><text x="257" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
@@ -210,25 +209,30 @@ contract TokenUriResolver is IJBTokenUriResolver
                 paddedTimeLeft,
                 '</text>',
                 // Line 2: Spacer
-                '<text x="0" y="64">',unicode'                              ','</text>',
+                '<text x="0" y="64">',unicode'                              ',
+                '</text>',
                 // Line 3: Balance  
-                '<text x="0" y="80">  balance     ',
+                '<text x="0" y="80">',
+                unicode'  ʙᴀʟᴀɴcᴇ     ',
                 paddedBalance, //TODO not working
                 '</text>',
                 // Line 4: Overflow
-                '<text x="0" y="96">  overflow    ',
+                '<text x="0" y="96">',unicode'  ovᴇʀꜰʟow    ',
                 paddedOverflow, // TODO not working  
                 '</text>',
                 // Line 5: Distribution Limit
-                '<text x="0" y="112">  distr. limit',
+                '<text x="0" y="112">',
+                unicode'  ᴅɪsᴛʀ. ʟɪᴍɪᴛ',
                 paddedDistributionLimit,
                 '</text>',
                 // Line 6: Total Supply 
-                '<text x="0" y="128">  total supply',
+                '<text x="0" y="128">',
+                unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',
                 paddedTotalSupply,
                 '</text>',
                 // Line 7: Project Owner
-                '<text x="0" y="144">  project owner',
+                '<text x="0" y="144">',
+                unicode'  ᴘʀoᴊᴇcᴛ owɴᴇʀ',
                 '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
                 '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
                 ownerName,
