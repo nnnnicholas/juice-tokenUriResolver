@@ -93,17 +93,17 @@ contract TokenUriResolver is IJBTokenUriResolver
     uint256 timeLeft;
     string memory paddedTimeLeft;
     if(duration == 0){
-        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'not set'), 13), '  '); // If the funding cycle has no duration, show infinite duration
+        paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', unicode'ɴoᴛ sᴇᴛ'), 20), '  '); // If the funding cycle has no duration, show infinite duration // N = 2, T = 3, E = 3, T = 3
     } else{
         timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
         if(timeLeft > 2 days){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), ' days'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 days).toString(), unicode' ᴅᴀʏs'), 18), '  '); // ᴅ = 3, ᴀ = 3, ʏ = 2
         } else if(timeLeft > 2 hours){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), ' hours'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 hours).toString(), unicode' ʜouʀs'), 17), '  '); // ʜ = 2, ʀ = 2
         } else if(timeLeft > 2 minutes){
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), ' minutes'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 minutes).toString(), unicode' ᴍɪɴuᴛᴇs'), 21), '  '); // ᴍ = 3, ɪ = 2, ɴ = 2, ᴛ = 3, ᴇ = 3
         } else {
-            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), ' seconds'), 13), '  ');
+            paddedTimeLeft = string.concat(leftPad(string.concat(unicode'', ' ', (timeLeft/ 1 seconds).toString(), unicode' sᴇcoɴᴅs'), 18), '  '); // E = 3, N = 2, D = 3
         }
     }
 
@@ -204,9 +204,9 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '</text></a><a href="https://juicebox.money"><text x="257" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
                 '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">',
-                unicode'  ꜰc ', //TODO pad right
+                unicode'  ꜰc ', // ꜰ = 3 TODO pad right
                 currentFundingCycleId.toString(),
-                '          ',
+                '        ',
                 paddedTimeLeft,
                 '</text>',
                 // Line 2: Spacer
