@@ -92,6 +92,29 @@ contract TokenUriResolver is IJBTokenUriResolver
         }
     }
 
+    function getProjectName(uint256 _projectId) internal view returns(string memory projectName){
+    // Project Handle
+    string memory projectName;
+        // If handle is set
+        if (
+            keccak256(abi.encode(projectHandles.handleOf(_projectId))) !=
+            keccak256(abi.encode(string("")))
+        ) {
+            // Set projectName to handle
+            projectName = string(abi.encodePacked("@", projectHandles.handleOf(_projectId)));
+        } else {
+            // Set projectName to name to 'Project #projectId'
+            projectName = string(
+                abi.encodePacked("Project #", _projectId.toString())
+            );
+        }
+        // Abbreviate handle to 27 chars if longer
+        if (bytes(projectName).length > 26) {
+            projectName = string(abi.encodePacked(slice.slice(projectName, 0, 26), unicode"…"));
+        }
+        return projectName;        
+    }
+
     function getUri(uint256 _projectId)
         external
         view
@@ -183,25 +206,10 @@ contract TokenUriResolver is IJBTokenUriResolver
     string memory paddedOverflowLeft = string.concat(pad(true,overflowString,13), '  '); // Length of 14 because Ξ counts as 2 characters, but has character width of 1
     string memory paddedOverflowRight = string.concat(pad(false,unicode'  ovᴇʀꜰʟow    ', 20)); //  E = 3, ʀ = 2, ꜰ = 3, ʟ = 2
 
-    // Project Handle
-    string memory projectName;
-        // If handle is set
-        if (
-            keccak256(abi.encode(projectHandles.handleOf(_projectId))) !=
-            keccak256(abi.encode(string("")))
-        ) {
-            // Set projectName to handle
-            projectName = string(abi.encodePacked("@", projectHandles.handleOf(_projectId)));
-        } else {
-            // Set projectName to name to 'Project #projectId'
-            projectName = string(
-                abi.encodePacked("Project #", _projectId.toString())
-            );
-        }
-        // Abbreviate handle to 27 chars if longer
-        if (bytes(projectName).length > 26) {
-            projectName = string(abi.encodePacked(slice.slice(projectName, 0, 26), unicode"…"));
-        }
+
+
+    string memory projectName = getProjectName(_projectId);
+
 
         string[] memory parts = new string[](4);
         parts[0] = string("data:application/json;base64,");
@@ -263,10 +271,10 @@ contract TokenUriResolver is IJBTokenUriResolver
                 // Line 7: Project Owner
                 '<text x="0" y="144">',
                 projectOwnerPaddedRight,
-                // '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
-                // '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
-                // ownerName,
-                // '</a>',
+                '  ', // additional spaces hard coded for this line, presumes address is 11 chars long
+                '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
+                ownerName,
+                '</a>',
                 '</text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#3A0F0C"/><stop offset="0.119792" stop-color="#44190F"/><stop offset="0.848958" stop-color="#43190F"/><stop offset="1" stop-color="#3A0E0B"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
             )
         );
