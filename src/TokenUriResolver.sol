@@ -62,7 +62,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 return str;
                 } else { // Pad strings shorter than target length
                 string memory padding;
-                for(uint i=0; i<=targetLength-length; i++){
+                for(uint i=0; i<targetLength-length; i++){
                     padding = string.concat(padding, ' ');
                 }
                 str = string.concat(padding, str);
@@ -75,7 +75,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 return str;
                 } else {
                     string memory padding;
-                    for(uint i=0; i<=targetLength-length; i++){
+                    for(uint i=0; i<targetLength-length; i++){
                         padding = string.concat(padding, ' ');
                     }
                     str = string.concat(str, padding);
@@ -113,15 +113,15 @@ contract TokenUriResolver is IJBTokenUriResolver
     }
 
     function getOverflowRow(string memory overflowString) internal view returns (string memory overflowRow){
-        string memory paddedOverflowLeft = string.concat(pad(true,overflowString,13), '  '); // Length of 14 because Ξ counts as 2 characters, but has character width of 1
-        string memory paddedOverflowRight = string.concat(pad(false,unicode'  ovᴇʀꜰʟow    ', 20)); //  E = 3, ʀ = 2, ꜰ = 3, ʟ = 2
+        string memory paddedOverflowLeft = string.concat(pad(true,overflowString,14), '  '); // Length of 14 because Ξ counts as 2 characters, but has character width of 1
+        string memory paddedOverflowRight = string.concat(pad(false,unicode'  ovᴇʀꜰʟow    ', 21)); //  E = 3, ʀ = 2, ꜰ = 3, ʟ = 2
         return string.concat(paddedOverflowRight, paddedOverflowLeft);
     }
 
     function getRightPaddedFC(uint256 _projectId, JBFundingCycle memory _fundingCycle) view internal returns (string memory rightPaddedFCString){
         uint256 currentFundingCycleId = _fundingCycle.number; // Project's current funding cycle id
         string memory fundingCycleIdString = currentFundingCycleId.toString();
-        return pad(false, string.concat(unicode'  ꜰc ', fundingCycleIdString), 14 + bytes(fundingCycleIdString).length);
+        return pad(false, string.concat(unicode'  ꜰc ', fundingCycleIdString), 17);
     }
 
     function getLeftPaddedTimeLeft(JBFundingCycle memory _fundingCycle) view internal returns (string memory leftPaddedTimeLeftString){
@@ -132,21 +132,21 @@ contract TokenUriResolver is IJBTokenUriResolver
         string memory paddedTimeLeft;
         string memory countString;
         if(duration == 0){ 
-            paddedTimeLeft = string.concat(pad(true, string.concat(unicode' ɴoᴛ sᴇᴛ'), 21), '  '); // If the funding cycle has no duration, show infinite duration //  = 3, N = 2, T = 3, E = 3, T = 3
+            paddedTimeLeft = string.concat(pad(true, string.concat(unicode' ɴoᴛ sᴇᴛ'), 22), '  '); // If the funding cycle has no duration, show infinite duration
         } else{
             timeLeft = start + duration - block.timestamp; // Project's current funding cycle time left
             if(timeLeft > 2 days){
                 countString = (timeLeft/ 1 days).toString();
-                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ᴅᴀʏs'), 18 + bytes(countString).length), '  '); // ᴅ = 3, ᴀ = 3, ʏ = 2
+                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ᴅᴀʏs'), 20), '  ');
             } else if(timeLeft > 2 hours){
                 countString = (timeLeft/ 1 hours).toString(); // 12 bytes || 8 visual + countString
-                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ʜouʀs'), 14 + bytes(countString).length), '  '); // ʜ = 2, ʀ = 2
+                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ʜouʀs'), 17), '  ');
             } else if(timeLeft > 2 minutes){
                 countString = (timeLeft/ 1 minutes).toString();
-                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ᴍɪɴuᴛᴇs'), 21 + bytes(countString).length), '  '); // ᴍ = 3, ɪ = 2, ɴ = 2, ᴛ = 3, ᴇ = 3
+                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' ᴍɪɴuᴛᴇs'), 23), '  ');
             } else {
                 countString =  (timeLeft/ 1 seconds).toString();
-                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' sᴇcoɴᴅs'), 18 + bytes(countString).length), '  '); // E = 3, ɴ = 2, D = 3
+                paddedTimeLeft = string.concat(pad(true, string.concat(unicode'', ' ', countString, unicode' sᴇcoɴᴅs'), 20), '  ');
             }
         }
         return paddedTimeLeft;
@@ -159,8 +159,8 @@ contract TokenUriResolver is IJBTokenUriResolver
     function getBalanceRow(IJBPaymentTerminal primaryEthPaymentTerminal, uint256 _projectId) internal view returns (string memory balanceRow){
         // Balance
         uint256 balance = singleTokenPaymentTerminalStore.balanceOf(IJBSingleTokenPaymentTerminal(address(primaryEthPaymentTerminal)),_projectId)/10**18; // Project's ETH balance //TODO Try/catch    
-        string memory paddedBalanceLeft = string.concat(pad(true, string.concat(unicode'Ξ',balance.toString()),13),'  '); // Project's ETH balance as a string
-        string memory paddedBalanceRight = pad(false,unicode'  ʙᴀʟᴀɴcᴇ     ', 23); // ʙ = 2, ᴀ = 3, ʟ = 2, ᴀ = 3, ɴ = 2, E = 3
+        string memory paddedBalanceLeft = string.concat(pad(true, string.concat(unicode'Ξ',balance.toString()),14),'  '); // Project's ETH balance as a string
+        string memory paddedBalanceRight = pad(false,unicode'  ʙᴀʟᴀɴcᴇ     ', 24); // ʙ = 2,    ᴀ = 3, ʟ = 2, ᴀ = 3, ɴ = 2, E = 3
         return string.concat(paddedBalanceRight, paddedBalanceLeft);
     }
 
@@ -175,16 +175,16 @@ contract TokenUriResolver is IJBTokenUriResolver
             distributionLimitCurrency = '$';
         }
         string memory distributionLimit = string.concat(distributionLimitCurrency, (distributionLimitPreprocessed/10**18).toString()); // Project's distribution limit
-        string memory paddedDistributionLimitLeft = string.concat(pad(true,distributionLimit,11+bytes(distributionLimitCurrency).length), '  ');
-        string memory paddedDistributionLimitRight = string.concat(pad(false, unicode'  ᴅɪsᴛʀ. ʟɪᴍɪᴛ', 27)); // ᴅ = 3, ɪ = 2, T = 3, ʀ = 2, ʟ = 2, ɪ = 2, ᴍ = 3, ɪ = 2, T = 3
+        string memory paddedDistributionLimitLeft = string.concat(pad(true,distributionLimit,12+bytes(distributionLimitCurrency).length), '  ');
+        string memory paddedDistributionLimitRight = string.concat(pad(false, unicode'  ᴅɪsᴛʀ. ʟɪᴍɪᴛ', 28)); // ᴅ = 3, ɪ = 2, T = 3, ʀ = 2, ʟ = 2, ɪ = 2, ᴍ = 3, ɪ = 2, T = 3
         return string.concat(paddedDistributionLimitRight, paddedDistributionLimitLeft);
     }
     
     function getTotalSupplyRow(uint256 _projectId) internal view returns (string memory totalSupplyRow){
         // Supply
         uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
-        string memory paddedTotalSupplyLeft = string.concat(pad(true,totalSupply.toString(),12),'  '); // Project's token total supply as a string
-        string memory paddedTotalSupplyRight = pad(false,unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',27);
+        string memory paddedTotalSupplyLeft = string.concat(pad(true,totalSupply.toString(),13),'  '); // Project's token total supply as a string
+        string memory paddedTotalSupplyRight = pad(false,unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',28);
         return string.concat(paddedTotalSupplyRight, paddedTotalSupplyLeft);
     }
 
