@@ -10,4 +10,3 @@ replace `$ETH_RPC_URL` and `BLOCK_NUMBER` with your preferred values
 
 
 https://www.figma.com/file/8fciDQxE3Owl7Ds7xWr4n7/tokenuri?t=B04Scn4y51fsGTbp-6
-https://github.com/nnnnicholas/juice-tokenUriResolver
