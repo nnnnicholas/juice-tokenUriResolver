@@ -180,6 +180,14 @@ contract TokenUriResolver is IJBTokenUriResolver
         return string.concat(paddedDistributionLimitRight, paddedDistributionLimitLeft);
     }
     
+    function getTotalSupplyRow(uint256 _projectId) internal view returns (string memory totalSupplyRow){
+        // Supply
+        uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
+        string memory paddedTotalSupplyLeft = string.concat(pad(true,totalSupply.toString(),12),'  '); // Project's token total supply as a string
+        string memory paddedTotalSupplyRight = pad(false,unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',27);
+        return string.concat(paddedTotalSupplyRight, paddedTotalSupplyLeft);
+    }
+
     function getUri(uint256 _projectId) external view override returns (string memory tokenUri){
     // Funding Cycle
     // FC#
@@ -187,12 +195,6 @@ contract TokenUriResolver is IJBTokenUriResolver
 
     // Get Primary Terminal 
     IJBPaymentTerminal primaryEthPaymentTerminal = directory.primaryTerminalOf(_projectId, JBTokens.ETH); // Project's primary ETH payment terminal
-
-
-    // Supply
-    uint256 totalSupply = tokenStore.totalSupplyOf(_projectId)/10**18; // Project's token total supply 
-    string memory paddedTotalSupplyLeft = string.concat(pad(true,totalSupply.toString(),12),'  '); // Project's token total supply as a string
-    string memory paddedTotalSupplyRight = pad(false,unicode'  ᴛoᴛᴀʟ suᴘᴘʟʏ',27);
 
     // JBToken ERC20
     IJBToken jbToken = tokenStore.tokenOf(_projectId); 
@@ -217,10 +219,6 @@ contract TokenUriResolver is IJBTokenUriResolver
     // }
 
     string memory projectOwnerPaddedRight = pad(false, unicode'  ᴘʀoᴊᴇcᴛ owɴᴇʀ', 28);
-
-
-
-
 
     string memory projectName = getProjectName(_projectId);
 
@@ -274,8 +272,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '</text>',
                 // Line 6: Total Supply 
                 '<text x="0" y="128">',
-                paddedTotalSupplyRight,
-                paddedTotalSupplyLeft,
+                getTotalSupplyRow(_projectId),
                 '</text>',
                 // Line 7: Project Owner
                 '<text x="0" y="144">',
