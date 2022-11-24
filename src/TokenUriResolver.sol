@@ -249,7 +249,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '">',// Line 0: Header
                 '<text x="16" y="16">',
                 projectName,
-                '</text></a><a href="https://juicebox.money"><text x="257" y="16">',unicode'','</text></a></g>',
+                '</text></a><a href="https://juicebox.money"><text x="259.25" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
                 '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">',
                 getFCTimeLeftRow(_projectId, fundingCycle),
