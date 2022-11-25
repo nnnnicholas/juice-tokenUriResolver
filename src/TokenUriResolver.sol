@@ -1,25 +1,29 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@juicebox/interfaces/IJBTokenUriResolver.sol";
+import {IJBTokenUriResolver} from "@juicebox/interfaces/IJBTokenUriResolver.sol";
 import {IJBToken, IJBTokenStore} from "@juicebox/interfaces/IJBTokenStore.sol";
 import {JBFundingCycle} from "@juicebox/structs/JBFundingCycle.sol";
+import {IJBPaymentTerminal} from "@juicebox/interfaces/IJBPaymentTerminal.sol";
 import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
 import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
-import {IJBController} from "@juicebox/interfaces/IJBController.sol";
-import "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
-import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
+import {IJBController, IJBDirectory, IJBFundingCycleStore} from "@juicebox/interfaces/IJBController.sol";
+import {IJBOperatorStore} from "@juicebox/interfaces/IJBOperatorStore.sol";
+import {IJBSingleTokenPaymentTerminalStore, IJBSingleTokenPaymentTerminal} from "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
+import {IJBProjects, IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
+import {JBOperatable} from "@juicebox/abstract/JBOperatable.sol";
+import {JBUriOperations} from "./Libraries/JBUriOperations.sol";
 import "base64/base64.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "./ITypeface.sol";
 
 // // ENS RESOLUTION
-// interface IReverseRegistrar {
-//     function node(address) external view returns (bytes32);
-// }
-// interface IResolver{
-//     function name(bytes32) external view returns(string memory);
-// }
+interface IReverseRegistrar {
+    function node(address) external view returns (bytes32);
+}
+interface IResolver{
+    function name(bytes32) external view returns(string memory);
+}
 
 contract StringSlicer{
     // This function is in a separate contract so that TokenUriResolver can pass it a string memory and we can still use Array Slices (which only work on calldata)
@@ -28,28 +32,50 @@ contract StringSlicer{
     }
 }
 
-contract TokenUriResolver is IJBTokenUriResolver
+contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
 {
     using Strings for uint256;
     StringSlicer slice = new StringSlicer();
 
-    // IReverseRegistrar reverseRegistrar = IReverseRegistrar(0x084b1c3C81545d370f3634392De611CaaBFf8148); // mainnet
-    // IResolver resolver = IResolver(0xA2C122BE93b0074270ebeE7f6b7292C7deB45047); // mainnet
-    IJBFundingCycleStore fundingCycleStore = IJBFundingCycleStore(0x6f18cF9173136c0B5A6eBF45f19D58d3ff2E17e6);
-    IJBProjects projects = IJBProjects(0xD8B4359143eda5B2d763E127Ed27c77addBc47d3);
-    IJBDirectory directory = IJBDirectory(0x65572FB928b46f9aDB7cfe5A4c41226F636161ea);
-    IJBTokenStore tokenStore = IJBTokenStore(0x6FA996581D7edaABE62C15eaE19fEeD4F1DdDfE7);
-    IJBProjectHandles projectHandles = IJBProjectHandles(0xE3c01E9Fd2a1dCC6edF0b1058B5757138EF9FfB6);
-    IJBSingleTokenPaymentTerminalStore singleTokenPaymentTerminalStore = IJBSingleTokenPaymentTerminalStore(0xdF7Ca703225c5da79A86E08E03A206c267B7470C);
-    IJBController controller = IJBController(0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98);
+    event Log(string message);
 
-    ITypeface public capsulesTypeface  = ITypeface(0xA77b7D93E79f1E6B4f77FaB29d9ef85733A3D44A); // Capsules typeface
+    IJBFundingCycleStore public fundingCycleStore;
+    IJBProjects public projects;
+    IJBDirectory public directory;
+    IJBTokenStore public tokenStore;
+    IJBSingleTokenPaymentTerminalStore public singleTokenPaymentTerminalStore;
+    IJBController public controller;
+    IJBProjectHandles public projectHandles;
+    ITypeface public capsulesTypeface ; // Capsules typeface
+    IReverseRegistrar public reverseRegistrar; // ENS
+    IResolver public resolver; // ENS
+
+    // Stores the token uri resolver address for each project. If set to 0, the default resolver in this contract will be used. Stored as addresses rather than IJBTokenUriResolver to allow for 0 address.
+    mapping (uint256 => IJBTokenUriResolver) public tokenUriResolvers;
+
+    constructor(IJBFundingCycleStore _fundingCycleStore, IJBProjects _projects, IJBDirectory _directory, IJBTokenStore _tokenStore, IJBSingleTokenPaymentTerminalStore _singleTokenPaymentTerminalStore, IJBController _controller, IJBOperatorStore _operatorStore, IJBProjectHandles _projectHandles, ITypeface _capsulesTypeface, IReverseRegistrar _reverseRegistrar, IResolver _resolver) 
+    JBOperatable(_operatorStore) {
+        fundingCycleStore = _fundingCycleStore;
+        projects = _projects;
+        directory = _directory;
+        tokenStore = _tokenStore;
+        projectHandles = _projectHandles;
+        singleTokenPaymentTerminalStore = _singleTokenPaymentTerminalStore;
+        controller = _controller;
+        capsulesTypeface = _capsulesTypeface;
+        reverseRegistrar = _reverseRegistrar;
+        resolver = _resolver;
+    } 
+
+    // @notice Gets the Base64 encoded Capsules-500.otf typeface
+    /// @return fontSource The Base64 encoded font file
     function getFontSource() internal view returns (bytes memory fontSource){
         return ITypeface(capsulesTypeface).sourceOf(Font({weight: 500, style: "normal"})); // Capsules font source    
     }
 
     /// @notice Transform strings to target length by abbreviation or left padding with spaces.
     /// @dev Shortens long strings to 13 characters including an ellipsis and adds left padding spaces to short strings. Allows variable target length to account for strings that have unicode characters that are longer than 1 byte but only take up 1 character space.
+    /// @param left True adds padding to the left of the passed string, and false adds padding to the right 
     /// @param str The string to transform
     /// @param targetLength The length of the string to return
     /// @return string The transformed string
@@ -86,25 +112,22 @@ contract TokenUriResolver is IJBTokenUriResolver
 
     function getProjectName(uint256 _projectId) internal view returns(string memory projectName){
     // Project Handle
-    string memory projectName;
+    string memory _projectName;
         // If handle is set
         if (
             keccak256(abi.encode(projectHandles.handleOf(_projectId))) !=
             keccak256(abi.encode(string("")))
         ) {
             // Set projectName to handle
-            projectName = string(abi.encodePacked("@", projectHandles.handleOf(_projectId)));
+            _projectName = string(abi.encodePacked("@", projectHandles.handleOf(_projectId)));
         } else {
             // Set projectName to name to 'Project #projectId'
-            projectName = string(
-                abi.encodePacked("Project #", _projectId.toString())
-            );
+            _projectName = string(abi.encodePacked("Project #", _projectId.toString()));
         }
         // Abbreviate handle to 27 chars if longer
-        if (bytes(projectName).length > 26) {
-            projectName = string(abi.encodePacked(slice.slice(projectName, 0, 26), unicode"…"));
+        if (bytes(_projectName).length > 26) {_projectName = string(abi.encodePacked(slice.slice(_projectName, 0, 26), unicode"…"));
         }
-        return projectName;        
+        return _projectName;        
     }
 
     function getOverflowString(uint256 _projectId) internal view returns (string memory overflowString){
@@ -118,7 +141,7 @@ contract TokenUriResolver is IJBTokenUriResolver
         return string.concat(paddedOverflowRight, paddedOverflowLeft);
     }
 
-    function getRightPaddedFC(uint256 _projectId, JBFundingCycle memory _fundingCycle) view internal returns (string memory rightPaddedFCString){
+    function getRightPaddedFC(JBFundingCycle memory _fundingCycle) view internal returns (string memory rightPaddedFCString){
         uint256 currentFundingCycleId = _fundingCycle.number; // Project's current funding cycle id
         string memory fundingCycleIdString = currentFundingCycleId.toString();
         return pad(false, string.concat(unicode'  ꜰc ', fundingCycleIdString), 17);
@@ -152,8 +175,8 @@ contract TokenUriResolver is IJBTokenUriResolver
         return paddedTimeLeft;
     }
 
-    function getFCTimeLeftRow(uint256 _projectId, JBFundingCycle memory fundingCycle) internal view returns (string memory fCTimeLeftRow){
-        return string.concat(getRightPaddedFC(_projectId, fundingCycle), getLeftPaddedTimeLeft(fundingCycle));
+    function getFCTimeLeftRow(JBFundingCycle memory fundingCycle) internal view returns (string memory fCTimeLeftRow){
+        return string.concat(getRightPaddedFC(fundingCycle), getLeftPaddedTimeLeft(fundingCycle));
     }
 
     function getBalanceRow(IJBPaymentTerminal primaryEthPaymentTerminal, uint256 _projectId) internal view returns (string memory balanceRow){
@@ -188,7 +211,27 @@ contract TokenUriResolver is IJBTokenUriResolver
         return string.concat(paddedTotalSupplyRight, paddedTotalSupplyLeft);
     }
 
+    function setTokenUriResolverForProject(uint256 _projectId, IJBTokenUriResolver _resolver) external requirePermission(projects.ownerOf(_projectId), _projectId, JBUriOperations.SET_TOKEN_URI) { 
+        if(_resolver == IJBTokenUriResolver(address(0))){
+            delete tokenUriResolvers[_projectId];
+        } else {
+            tokenUriResolvers[_projectId]= _resolver;
+        }
+    }
+
     function getUri(uint256 _projectId) external view override returns (string memory tokenUri){
+        if (tokenUriResolvers[_projectId] == IJBTokenUriResolver(address(0))){
+            return getDefaultUri(_projectId);
+        } else {
+            try tokenUriResolvers[_projectId].getUri(_projectId) returns (string memory uri){
+                return uri;
+            } catch {
+                return getDefaultUri(_projectId);
+            }
+        }
+    }
+
+    function getDefaultUri(uint256 _projectId) public view returns (string memory tokenUri){
     // Funding Cycle
     // FC#
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
@@ -252,7 +295,7 @@ contract TokenUriResolver is IJBTokenUriResolver
                 '</text></a><a href="https://juicebox.money"><text x="259.25" y="16">',unicode'','</text></a></g>',
                 // Line 1: FC + Time left
                 '<g filter="url(#filter1_d_150_56)"><text x="0" y="48">',
-                getFCTimeLeftRow(_projectId, fundingCycle),
+                getFCTimeLeftRow(fundingCycle),
                 '</text>',
                 // Line 2: Spacer
                 '<text x="0" y="64">',
@@ -290,22 +333,22 @@ contract TokenUriResolver is IJBTokenUriResolver
         return uri;
     }
 
-// borrowed from https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
-function toAsciiString(address x) internal pure returns (string memory) {
-    bytes memory s = new bytes(40);
-    for (uint i = 0; i < 20; i++) {
-        bytes1 b = bytes1(uint8(uint(uint160(x)) / (2**(8*(19 - i)))));
-        bytes1 hi = bytes1(uint8(b) / 16);
-        bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
-        s[2*i] = char(hi);
-        s[2*i+1] = char(lo);            
+    // borrowed from https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
+    function toAsciiString(address x) internal pure returns (string memory) {
+        bytes memory s = new bytes(40);
+        for (uint i = 0; i < 20; i++) {
+            bytes1 b = bytes1(uint8(uint(uint160(x)) / (2**(8*(19 - i)))));
+            bytes1 hi = bytes1(uint8(b) / 16);
+            bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
+            s[2*i] = char(hi);
+            s[2*i+1] = char(lo);            
+        }
+        return string(s);
     }
-    return string(s);
-}
 
-function char(bytes1 b) internal pure returns (bytes1 c) {
-    if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
-    else return bytes1(uint8(b) + 0x57);
-}
+    function char(bytes1 b) internal pure returns (bytes1 c) {
+        if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
+        else return bytes1(uint8(b) + 0x57);
+    }
 
 }
