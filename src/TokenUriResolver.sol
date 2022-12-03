@@ -32,12 +32,21 @@ contract StringSlicer{
     }
 }
 
-contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
-{
+// TODO move to its own definition library
+struct Theme {
+    uint256 projectId;
+    string textColor;
+    string bgColor;
+    string bgColorDark;
+}
+
+contract TokenUriResolver is IJBTokenUriResolver, JBOperatable {
     using Strings for uint256;
     StringSlicer slice = new StringSlicer();
 
     event Log(string message);
+    event ThemeSet(uint256 projectId, Theme theme);
+    error InvalidTheme();
 
     IJBFundingCycleStore public fundingCycleStore;
     IJBProjects public projects;
@@ -52,6 +61,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
 
     // Stores the token uri resolver address for each project. If set to 0, the default resolver in this contract will be used. Stored as addresses rather than IJBTokenUriResolver to allow for 0 address.
     mapping (uint256 => IJBTokenUriResolver) public tokenUriResolvers;
+    mapping (uint256 => Theme) public themes;
 
     constructor(IJBFundingCycleStore _fundingCycleStore, IJBProjects _projects, IJBDirectory _directory, IJBTokenStore _tokenStore, IJBSingleTokenPaymentTerminalStore _singleTokenPaymentTerminalStore, IJBController _controller, IJBOperatorStore _operatorStore, IJBProjectHandles _projectHandles, ITypeface _capsulesTypeface, IReverseRegistrar _reverseRegistrar, IResolver _resolver) 
     JBOperatable(_operatorStore) {
@@ -65,6 +75,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
         capsulesTypeface = _capsulesTypeface;
         reverseRegistrar = _reverseRegistrar;
         resolver = _resolver;
+        themes[0] = Theme({projectId : 0, bgColor : "FF9213", bgColorDark : "44190F"});
     } 
 
     // @notice Gets the Base64 encoded Capsules-500.otf typeface
@@ -219,6 +230,13 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
         }
     }
 
+    // TODO write tests
+    function setTheme(Theme memory _theme) external requirePermission(projects.ownerOf(_theme.projectId), _theme.projectId, JBUriOperations.SET_TOKEN_URI) {   
+        if (_theme.projectId = 0) revert InvalidTheme(); // Cannot set theme for project 0
+        themes[_theme.projectId] = _theme;
+        emit ThemeSet(_theme.projectId, _theme);
+    }
+
     function getUri(uint256 _projectId) external view override returns (string memory tokenUri){
         if (tokenUriResolvers[_projectId] == IJBTokenUriResolver(address(0))){
             return getDefaultUri(_projectId);
@@ -232,6 +250,16 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
     }
 
     function getDefaultUri(uint256 _projectId) public view returns (string memory tokenUri){
+    // Load theme
+    Theme memory theme;
+    if (themes[_projectId].projectId == 0){
+        theme = themes[0];
+    }
+    else{
+        theme = themes[_projectId];
+    }
+
+
     // Funding Cycle
     // FC#
     JBFundingCycle memory fundingCycle = fundingCycleStore.currentOf(_projectId); // Project's current funding cycle
@@ -287,7 +315,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
             abi.encodePacked(
                 '<svg width="289" height="403" viewBox="0 0 289 403" xmlns="http://www.w3.org/2000/svg"><style>@font-face{font-family:"Capsules-500";src:url(data:font/truetype;charset=utf-8;base64,',
                 getFontSource(), // import Capsules typeface
-                ');format("opentype");}a,a:visited,a:hover{fill:inherit;text-decoration:none;}text{font-size:16px;fill:#FF9213;font-family:"Capsules-500",monospace;font-weight:500;white-space:pre-wrap;}#header text{fill:#642617;}</style><g clip-path="url(#clip0_150_56)"><path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/><rect width="289" height="22" fill="#FF9213"/><g id="header"><a href="https://juicebox.money/v2/p/',
+                ');format("opentype");}a,a:visited,a:hover{fill:inherit;text-decoration:none;}text{font-size:16px;fill:#', theme.color1, ';font-family:"Capsules-500",monospace;font-weight:500;white-space:pre-wrap;}#header text{fill:#',theme.bgColor,';}</style><g clip-path="url(#clip0_150_56)"><path d="M289 0H0V403H289V0Z" fill="url(#paint0_linear_150_56)"/><rect width="289" height="22" fill="#', theme.textColor, '"/><g id="header"><a href="https://juicebox.money/v2/p/',
                 _projectId.toString(),
                 '">',// Line 0: Header
                 '<text x="16" y="16">',
@@ -324,7 +352,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable
                 '<a href="https://etherscan.io/address/', toAsciiString(owner), '">',
                 ownerName,
                 '</a>',
-                '</text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#3A0F0C"/><stop offset="0.119792" stop-color="#44190F"/><stop offset="0.848958" stop-color="#43190F"/><stop offset="1" stop-color="#3A0E0B"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
+                '</text></g></g><defs><filter id="filter0_d_150_56" x="15.8275" y="0.039999" width="256.164" height="21.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><filter id="filter1_d_150_56" x="-3.36" y="26.04" width="294.539" height="126.12" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/> <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.572549 0 0 0 0 0.0745098 0 0 0 0.68 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_150_56"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_150_56" result="shape"/></filter><linearGradient id="paint0_linear_150_56" x1="0" y1="202" x2="289" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#',theme.bgColorDark,'"/><stop offset="0.119792" stop-color="#',theme.bgColor,'"/><stop offset="0.848958" stop-color="#',theme.bgColor,'"/><stop offset="1" stop-color="#', theme.bgColorDark,'"/></linearGradient><clipPath id="clip0_150_56"><rect width="289" height="403" /></clipPath></defs></svg>'
             )
         );
         parts[3] = string('"}');

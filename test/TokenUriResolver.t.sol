@@ -23,7 +23,7 @@ contract ContractTest is Test {
     TokenUriResolver c = new TokenUriResolver(fundingCycleStore, projects, directory, tokenStore, singleTokenPaymentTerminalStore, controller, operatorStore, projectHandles, capsulesTypeface, reverseRegistrar, resolver);
 
     function testGetUri() external {
-        string memory x = c.getUri(305); // 1, 311, 305, 308, 323
+        string memory x = c.getUri(327); // 1, 311, 305, 308, 323
         string[] memory inputs = new string[](3);
         inputs[0] = "node";
         inputs[1] = "./open.js";
