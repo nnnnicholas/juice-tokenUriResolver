@@ -10,7 +10,8 @@ import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
 import {IJBController, IJBDirectory, IJBFundingCycleStore} from "@juicebox/interfaces/IJBController.sol";
 import {IJBOperatorStore} from "@juicebox/interfaces/IJBOperatorStore.sol";
 import {IJBSingleTokenPaymentTerminalStore, IJBSingleTokenPaymentTerminal} from "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
-import {IJBProjects, IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
+import {IJBProjects} from "@juicebox/interfaces/IJBProjects.sol";
+import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import {JBOperatable} from "@juicebox/abstract/JBOperatable.sol";
 import {JBUriOperations} from "./Libraries/JBUriOperations.sol";
 import "base64/base64.sol";
@@ -40,7 +41,7 @@ struct Theme {
     string bgColorDark;
 }
 
-contract TokenUriResolver is IJBTokenUriResolver, JBOperatable {
+contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
     using Strings for uint256;
     StringSlicer slice = new StringSlicer();
 

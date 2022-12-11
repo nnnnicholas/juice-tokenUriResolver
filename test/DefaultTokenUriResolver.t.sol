@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../src/TokenUriResolver.sol";
+import {TokenUriResolver} from "../src/TokenUriResolver.sol";
+import "../src/DefaultTokenUriResolver.sol";
 // import "juice-project-handles/interfaces/IJBProjectHandles.sol";
 // import "base64/base64.sol";
 
@@ -20,10 +21,10 @@ contract ContractTest is Test {
     IReverseRegistrar public reverseRegistrar = IReverseRegistrar(0x084b1c3C81545d370f3634392De611CaaBFf8148);
     IResolver public resolver = IResolver(0xA2C122BE93b0074270ebeE7f6b7292C7deB45047);
     
-    TokenUriResolver c = new TokenUriResolver(fundingCycleStore, projects, directory, tokenStore, singleTokenPaymentTerminalStore, controller, operatorStore, projectHandles, capsulesTypeface, reverseRegistrar, resolver);
+    DefaultTokenUriResolver d = new DefaultTokenUriResolver(fundingCycleStore, projects, directory, tokenStore, singleTokenPaymentTerminalStore, controller, operatorStore, projectHandles, capsulesTypeface, reverseRegistrar, resolver);
 
     function testGetUri() external {
-        string memory x = c.getUri(305); // 1, 311, 305, 308, 323
+        string memory x = d.getUri(305); // 1, 311, 305, 308, 323
         string[] memory inputs = new string[](3);
         inputs[0] = "node";
         inputs[1] = "./open.js";
@@ -40,8 +41,8 @@ contract ContractTest is Test {
             bgColorDark: "black"
         });
         vm.prank(0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e);
-        c.setTheme(customTheme);
-        string memory x = c.getUri(1); // 1, 311, 305, 308, 323
+        d.setTheme(customTheme);
+        string memory x = d.getUri(1); // 1, 311, 305, 308, 323
         string[] memory inputs = new string[](3);
         inputs[0] = "node";
         inputs[1] = "./open.js";

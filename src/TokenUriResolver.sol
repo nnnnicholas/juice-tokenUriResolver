@@ -7,13 +7,16 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {JBUriOperations} from "./Libraries/JBUriOperations.sol";
 import {JBOperatable, IJBOperatorStore} from "@juicebox/abstract/JBOperatable.sol";
 
+/**
+ * @title A TokenUriResolver registry
+ * @notice The registry serves default metadata, which is mutable by the contract owner. Juicebox project owners can override with their own metadata contracts.
+ */
 contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
     IJBProjects public immutable projects;
-    // IJBOperatorStore public immutable operatorStore;
     mapping(uint256 => IJBTokenUriResolver) public tokenUriResolvers;
 
     constructor(
-        IJBProjects _projects,
+        IJBProjects _projects, 
         IJBOperatorStore _operatorStore,
         IJBTokenUriResolver _defaultTokenUriResolver
     ) JBOperatable(_operatorStore) {
