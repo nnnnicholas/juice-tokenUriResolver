@@ -23,33 +23,33 @@ contract ContractTest is Test {
     
     DefaultTokenUriResolver d = new DefaultTokenUriResolver(fundingCycleStore, projects, directory, tokenStore, singleTokenPaymentTerminalStore, controller, operatorStore, projectHandles, capsulesTypeface, reverseRegistrar, resolver);
 
-    function testGetUri() external {
-        string memory x = d.getUri(305); // 1, 311, 305, 308, 323
-        string[] memory inputs = new string[](3);
-        inputs[0] = "node";
-        inputs[1] = "./open.js";
-        inputs[2] = x;
-        // bytes memory res = vm.ffi(inputs);
-        vm.ffi(inputs);
-    }
+    // function testGetUri() external {
+    //     string memory x = d.getUri(305); // 1, 311, 305, 308, 323
+    //     string[] memory inputs = new string[](3);
+    //     inputs[0] = "node";
+    //     inputs[1] = "./open.js";
+    //     inputs[2] = x;
+    //     // bytes memory res = vm.ffi(inputs);
+    //     vm.ffi(inputs);
+    // }
 
-    function testSetTheme() external {
-        Theme memory customTheme = Theme({
-            projectId: 1,
-            textColor: "white",
-            bgColor: "black",
-            bgColorDark: "black"
-        });
-        vm.prank(0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e);
-        d.setTheme(customTheme);
-        string memory x = d.getUri(1); // 1, 311, 305, 308, 323
-        string[] memory inputs = new string[](3);
-        inputs[0] = "node";
-        inputs[1] = "./open.js";
-        inputs[2] = x;
-        // bytes memory res = vm.ffi(inputs);
-        vm.ffi(inputs);
-    }
+    // function testSetTheme() external {
+    //     Theme memory customTheme = Theme({
+    //         projectId: 1,
+    //         textColor: "white",
+    //         bgColor: "black",
+    //         bgColorDark: "black"
+    //     });
+    //     vm.prank(0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e);
+    //     d.setTheme(customTheme);
+    //     string memory x = d.getUri(1); // 1, 311, 305, 308, 323
+    //     string[] memory inputs = new string[](3);
+    //     inputs[0] = "node";
+    //     inputs[1] = "./open.js";
+    //     inputs[2] = x;
+    //     // bytes memory res = vm.ffi(inputs);
+    //     vm.ffi(inputs);
+    // }
 
 }
 

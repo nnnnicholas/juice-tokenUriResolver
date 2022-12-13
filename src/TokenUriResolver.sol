@@ -8,15 +8,18 @@ import {JBUriOperations} from "./Libraries/JBUriOperations.sol";
 import {JBOperatable, IJBOperatorStore} from "@juicebox/abstract/JBOperatable.sol";
 
 /**
- * @title A TokenUriResolver registry
- * @notice The registry serves default metadata, which is mutable by the contract owner. Juicebox project owners can override with their own metadata contracts.
+ * @title Juicebox TokenUriResolver Registry
+ * @notice The registry serves metadata for all Juicebox v2 projects.
+ * @dev Projects' default metadata can be updated by the contract owner.
+ * @dev Juicebox project owners can override the deafult metadata with their own metadata contracts.
  */
 contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
+
     IJBProjects public immutable projects;
-    mapping(uint256 => IJBTokenUriResolver) public tokenUriResolvers;
+    mapping(uint256 => IJBTokenUriResolver) public tokenUriResolvers; // projectId => tokenUriResolver
 
     constructor(
-        IJBProjects _projects, 
+        IJBProjects _projects,
         IJBOperatorStore _operatorStore,
         IJBTokenUriResolver _defaultTokenUriResolver
     ) JBOperatable(_operatorStore) {
