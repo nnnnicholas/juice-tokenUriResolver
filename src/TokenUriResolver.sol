@@ -45,7 +45,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
      *  @dev Called by `JBProjects.tokenUri(uint256)`. If a project has a custom token uri resolver, it is used instead of the default resolver.
      *  @param _projectId The id of the project.
      *  @return tokenUri The token uri for the project.
-     *  @inheritdoc	IJBTokenUriResolver.
+     *  @inheritdoc	IJBTokenUriResolver
      */
     function getUri(uint256 _projectId)
         external

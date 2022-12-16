@@ -127,6 +127,7 @@ contract ContractTest is Test {
         vm.ffi(inputs);
     }
 
+    // Tests that calls to getUri fail when no resolver is set, and that setting a new default resolver works
     function testGetDefaultMetadata2() external {
         TokenUriResolver x = new TokenUriResolver(_projects, _operatorStore, IJBTokenUriResolver(address(uint160(1))));
         // try and catch to call getUri() 
@@ -146,6 +147,12 @@ contract ContractTest is Test {
         vm.expectRevert();
         string memory z = x.getUri(1);
         assertEq(z, "", "Default metadata should be empty");
-        t.setDefaultTokenUriResovler(y);
+        x.setDefaultTokenUriResovler(y);
+    }
+
+    function testSetTokenUriResolverForProjectRequiresPermission() external{
+        vm.expectRevert();
+        t.setTokenUriResolverForProject(1, IJBTokenUriResolver(address(uint160(1))));
+
     }
 }
