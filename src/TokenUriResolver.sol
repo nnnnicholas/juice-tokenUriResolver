@@ -86,7 +86,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
         external
         requirePermission(
             projects.ownerOf(_projectId),
-            1,
+            _projectId,
             JBUriOperations.SET_TOKEN_URI
         )
     {
