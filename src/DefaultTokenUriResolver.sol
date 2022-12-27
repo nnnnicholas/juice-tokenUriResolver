@@ -123,11 +123,9 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
             // Left pad
             if (length > targetLength) {
                 // Shorten strings strings longer than target length
-                str = string(
-                    abi.encodePacked(
-                        slice.slice(str, 0, targetLength - 1),
-                        unicode"…"
-                    )
+                str = string.concat(
+                    slice.slice(str, 0, targetLength - 1),
+                    unicode"…"
                 ); // Shortens to 1 character less than target length and adds an ellipsis unicode character
             } else if (length == targetLength) {
                 return str;
@@ -143,11 +141,9 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
         } else {
             // Right pad
             if (length > targetLength) {
-                str = string(
-                    abi.encodePacked(
-                        slice.slice(str, 0, targetLength - 1),
-                        unicode"…"
-                    )
+                str = string.concat(
+                    slice.slice(str, 0, targetLength - 1),
+                    unicode"…"
                 ); // Shortens to 1 character less than target length and adds an ellipsis unicode character
             } else if (length == targetLength) {
                 return str;
@@ -175,19 +171,19 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
             keccak256(abi.encode(string("")))
         ) {
             // Set projectName to handle
-            _projectName = string(
-                abi.encodePacked("@", projectHandles.handleOf(_projectId))
+            _projectName = string.concat(
+                "@",
+                projectHandles.handleOf(_projectId)
             );
         } else {
             // Set projectName to name to 'Project #projectId'
-            _projectName = string(
-                abi.encodePacked("Project #", _projectId.toString())
-            );
+            _projectName = string.concat("Project #", _projectId.toString());
         }
         // Abbreviate handle to 27 chars if longer
         if (bytes(_projectName).length > 26) {
-            _projectName = string(
-                abi.encodePacked(slice.slice(_projectName, 0, 26), unicode"…")
+            _projectName = string.concat(
+                slice.slice(_projectName, 0, 26),
+                unicode"…"
             );
         }
         return _projectName;
@@ -498,16 +494,14 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
 
         string[] memory parts = new string[](4);
         parts[0] = string("data:application/json;base64,");
-        parts[1] = string(
-            abi.encodePacked(
-                '{"name":"',
-                projectName,
-                '", "description":"',
-                projectName,
-                " is a project on the Juicebox Protocol. It has an overflow of ",
-                getOverflowString(_projectId),
-                ' ETH.", "image":"data:image/svg+xml;base64,'
-            )
+        parts[1] = string.concat(
+            '{"name":"',
+            projectName,
+            '", "description":"',
+            projectName,
+            " is a project on the Juicebox Protocol. It has an overflow of ",
+            getOverflowString(_projectId),
+            ' ETH.", "image":"data:image/svg+xml;base64,'
         );
         // Each line (row) of the SVG is 30 monospaced characters long
         // The first half of each line (15 chars) is the title
@@ -515,7 +509,7 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
         // The first and last characters on the line are two spaces
         // The first line (header) is an exception.
         parts[2] = Base64.encode(
-            abi.encodePacked(
+            string.concat(
                 '<svg width="289" height="403" viewBox="0 0 289 403" xmlns="http://www.w3.org/2000/svg"><style>@font-face{font-family:"Capsules-500";src:url(data:font/truetype;charset=utf-8;base64,',
                 getFontSource(), // import Capsules typeface
                 ');format("opentype");}a,a:visited,a:hover{fill:inherit;text-decoration:none;}text{font-size:16px;fill:',
@@ -579,7 +573,7 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
         parts[3] = string('"}');
         string memory uri = string.concat(
             parts[0],
-            Base64.encode(abi.encodePacked(parts[1], parts[2], parts[3]))
+            Base64.encode(string.concat(parts[1], parts[2], parts[3]))
         );
         return uri;
     }
