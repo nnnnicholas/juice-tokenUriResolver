@@ -60,10 +60,11 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
         override
         returns (string memory tokenUri)
     {
-        if (tokenUriResolvers[_projectId] == IJBTokenUriResolver(address(0))) {
+        IJBTokenUriResolver tur = tokenUriResolvers[_projectId];
+        if (tur == IJBTokenUriResolver(address(0))) {
             return tokenUriResolvers[0].getUri(_projectId);
         } else {
-            try tokenUriResolvers[_projectId].getUri(_projectId) returns (
+            try tur.getUri(_projectId) returns (
                 string memory uri
             ) {
                 return uri;
