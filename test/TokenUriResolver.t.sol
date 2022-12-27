@@ -111,7 +111,7 @@ contract ContractTest is Test {
             _reverseRegistrar,
             _resolver
         );
-        t.setDefaultTokenUriResovler(n);
+        t.setDefaultTokenUriResolver(n);
         assertEq(
             t.getUri(1),
             defaultMetadata,
@@ -147,7 +147,7 @@ contract ContractTest is Test {
         vm.expectRevert();
         string memory z = x.getUri(1);
         assertEq(z, "", "Default metadata should be empty");
-        x.setDefaultTokenUriResovler(y);
+        x.setDefaultTokenUriResolver(y);
     }
 
     function testSetTokenUriResolverForProjectRequiresPermission() external{
