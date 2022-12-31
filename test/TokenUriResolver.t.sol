@@ -239,7 +239,9 @@ contract ContractTest is Test {
     }
 
     // Tests that an operator can only modify the resolver for projects they are operators for, and not other projects owned by the same address
-    function testSetTokenUriResolverForProjectAsOperatorCorrectDomainOnly() external {
+    function testSetTokenUriResolverForProjectAsOperatorCorrectDomainOnly()
+        external
+    {
         // Set an operator
         uint256[] memory indexes = new uint256[](1);
         indexes[0] = JBUriOperations.SET_TOKEN_URI;
