@@ -22,7 +22,6 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
         uint256 indexed projectId,
         IJBTokenUriResolver indexed tokenUriResolver
     );
-    error Unauthorized();
 
     /**
      * @notice Each project's IJBTokenUriResolver metadata contract.
@@ -65,9 +64,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
         if (tur == IJBTokenUriResolver(address(0))) {
             return tokenUriResolvers[0].getUri(_projectId);
         } else {
-            try tur.getUri(_projectId) returns (
-                string memory uri
-            ) {
+            try tur.getUri(_projectId) returns (string memory uri) {
                 return uri;
             } catch {
                 return tokenUriResolvers[0].getUri(_projectId);
@@ -92,7 +89,7 @@ contract TokenUriResolver is IJBTokenUriResolver, JBOperatable, Ownable {
             JBUriOperations.SET_TOKEN_URI
         )
     {
-        if (_projectId == 0) revert Unauthorized();
+        if (_projectId == 0) revert UNAUTHORIZED();
         if (_resolver == IJBTokenUriResolver(address(0))) {
             delete tokenUriResolvers[_projectId];
         } else {
