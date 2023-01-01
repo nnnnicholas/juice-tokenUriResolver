@@ -68,25 +68,25 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
     mapping(uint256 => Theme) public themes;
 
     constructor(
-        IJBFundingCycleStore _fundingCycleStore,
-        IJBProjects _projects,
-        IJBDirectory _directory,
-        IJBTokenStore _tokenStore,
-        IJBSingleTokenPaymentTerminalStore _singleTokenPaymentTerminalStore,
-        IJBController _controller,
+        // IJBFundingCycleStore _fundingCycleStore,
+        // IJBProjects _projects,
+        // IJBController _controller,
+        // IJBTokenStore _tokenStore,
+        // IJBSingleTokenPaymentTerminalStore _singleTokenPaymentTerminalStore,
         IJBOperatorStore _operatorStore,
+        IJBDirectory _directory,
         IJBProjectHandles _projectHandles,
         ITypeface _capsulesTypeface,
         IReverseRegistrar _reverseRegistrar,
         IResolver _resolver
     ) JBOperatable(_operatorStore) {
-        fundingCycleStore = _fundingCycleStore;
-        projects = _projects;
         directory = _directory;
-        tokenStore = _tokenStore;
+        projects = directory.projects();
+        fundingCycleStore = directory.fundingCycleStore();
+        controller = directory.controller();
+        tokenStore = controller.tokenStore();
+        singleTokenPaymentTerminalStore = directory.primaryTerminalOf(1, JBTokens.ETH).store();
         projectHandles = _projectHandles;
-        singleTokenPaymentTerminalStore = _singleTokenPaymentTerminalStore;
-        controller = _controller;
         capsulesTypeface = _capsulesTypeface;
         reverseRegistrar = _reverseRegistrar;
         resolver = _resolver;
