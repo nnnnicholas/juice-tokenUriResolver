@@ -65,8 +65,8 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
     IJBController public controller;
     IJBProjectHandles public projectHandles;
     ITypeface public capsulesTypeface; // Capsules typeface
-    IReverseRegistrar public reverseRegistrar; // ENS
-    IResolver public resolver; // ENS
+    // IReverseRegistrar public reverseRegistrar; // ENS
+    // IResolver public resolver; // ENS
 
     mapping(uint256 => Theme) public themes;
 
@@ -74,9 +74,9 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
         IJBOperatorStore _operatorStore,
         IJBDirectory _directory,
         IJBProjectHandles _projectHandles,
-        ITypeface _capsulesTypeface,
-        IReverseRegistrar _reverseRegistrar,
-        IResolver _resolver
+        ITypeface _capsulesTypeface
+        // IReverseRegistrar _reverseRegistrar,
+        // IResolver _resolver
     ) JBOperatable(_operatorStore) {
         directory = _directory;
         projects = directory.projects();
@@ -86,8 +86,8 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
         singleTokenPaymentTerminalStore = IJBSingleTokenPaymentTerminalStore(IJBPayoutRedemptionPaymentTerminal(address(IJBPaymentTerminal(directory.primaryTerminalOf(1, JBTokens.ETH)))).store());
         projectHandles = _projectHandles;
         capsulesTypeface = _capsulesTypeface;
-        reverseRegistrar = _reverseRegistrar;
-        resolver = _resolver;
+        // reverseRegistrar = _reverseRegistrar;
+        // resolver = _resolver;
         themes[0] = Theme({
             projectId: 0,
             textColor: "#FF9213",

@@ -21,7 +21,9 @@ contract ContractTest is Test {
     IReverseRegistrar public reverseRegistrar = IReverseRegistrar(0x084b1c3C81545d370f3634392De611CaaBFf8148);
     IResolver public resolver = IResolver(0xA2C122BE93b0074270ebeE7f6b7292C7deB45047);
     
-    DefaultTokenUriResolver d = new DefaultTokenUriResolver(operatorStore, directory, projectHandles, capsulesTypeface, reverseRegistrar, resolver);
+    DefaultTokenUriResolver d = new DefaultTokenUriResolver(operatorStore, directory, projectHandles, capsulesTypeface
+    // , reverseRegistrar, resolver
+    );
 
     // function testGetUri() external {
     //     string memory x = d.getUri(305); // 1, 311, 305, 308, 323
