@@ -9,7 +9,6 @@ import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
 import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
 import {IJBController, IJBDirectory, IJBFundingCycleStore} from "@juicebox/interfaces/IJBController.sol";
 import {IJBOperatorStore} from "@juicebox/interfaces/IJBOperatorStore.sol";
-import {JBETHPaymentTerminal} from "@juicebox/JBETHPaymentTerminal.sol";
 import {IJBPayoutRedemptionPaymentTerminal} from "@juicebox/interfaces/IJBPayoutRedemptionPaymentTerminal.sol";
 import {IJBSingleTokenPaymentTerminalStore, IJBSingleTokenPaymentTerminal} from "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
 import {JBPayoutRedemptionPaymentTerminal} from "@juicebox/abstract/JBPayoutRedemptionPaymentTerminal.sol";
@@ -17,6 +16,7 @@ import {IJBProjects} from "@juicebox/interfaces/IJBProjects.sol";
 import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import {JBOperatable} from "@juicebox/abstract/JBOperatable.sol";
 import {JBUriOperations} from "./Libraries/JBUriOperations.sol";
+import {Theme} from "./Structs/Theme.sol";
 import "base64/base64.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "./ITypeface.sol";
@@ -39,14 +39,6 @@ contract StringSlicer {
     ) external pure returns (string memory) {
         return string(bytes(_str)[_start:_end]);
     }
-}
-
-// TODO move to its own definition library
-struct Theme {
-    uint256 projectId;
-    string textColor;
-    string bgColor;
-    string bgColorDark;
 }
 
 contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
