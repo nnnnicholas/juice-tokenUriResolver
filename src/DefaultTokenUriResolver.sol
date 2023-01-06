@@ -9,7 +9,10 @@ import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
 import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
 import {IJBController, IJBDirectory, IJBFundingCycleStore} from "@juicebox/interfaces/IJBController.sol";
 import {IJBOperatorStore} from "@juicebox/interfaces/IJBOperatorStore.sol";
+import {JBETHPaymentTerminal} from "@juicebox/JBETHPaymentTerminal.sol";
+import {IJBPayoutRedemptionPaymentTerminal} from "@juicebox/interfaces/IJBPayoutRedemptionPaymentTerminal.sol";
 import {IJBSingleTokenPaymentTerminalStore, IJBSingleTokenPaymentTerminal} from "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
+import {JBPayoutRedemptionPaymentTerminal} from "@juicebox/abstract/JBPayoutRedemptionPaymentTerminal.sol";
 import {IJBProjects} from "@juicebox/interfaces/IJBProjects.sol";
 import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import {JBOperatable} from "@juicebox/abstract/JBOperatable.sol";
@@ -68,11 +71,6 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
     mapping(uint256 => Theme) public themes;
 
     constructor(
-        // IJBFundingCycleStore _fundingCycleStore,
-        // IJBProjects _projects,
-        // IJBController _controller,
-        // IJBTokenStore _tokenStore,
-        // IJBSingleTokenPaymentTerminalStore _singleTokenPaymentTerminalStore,
         IJBOperatorStore _operatorStore,
         IJBDirectory _directory,
         IJBProjectHandles _projectHandles,
@@ -83,9 +81,9 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
         directory = _directory;
         projects = directory.projects();
         fundingCycleStore = directory.fundingCycleStore();
-        controller = directory.controller();
+        controller = IJBController(directory.controllerOf(1));
         tokenStore = controller.tokenStore();
-        singleTokenPaymentTerminalStore = directory.primaryTerminalOf(1, JBTokens.ETH).store();
+        singleTokenPaymentTerminalStore = IJBSingleTokenPaymentTerminalStore(IJBPayoutRedemptionPaymentTerminal(address(IJBPaymentTerminal(directory.primaryTerminalOf(1, JBTokens.ETH)))).store());
         projectHandles = _projectHandles;
         capsulesTypeface = _capsulesTypeface;
         reverseRegistrar = _reverseRegistrar;
