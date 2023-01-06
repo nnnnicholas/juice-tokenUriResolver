@@ -1,0 +1,17 @@
+@chainlink/=lib/juice-contracts-v3/lib/chainlink/
+@contracts/=lib/juice-project-handles/contracts/
+@ensdomains/=lib/juice-project-handles/node_modules/@ensdomains/
+@jbx-protocol/=lib/juice-project-handles/node_modules/@jbx-protocol/
+@juicebox/=lib/juice-contracts-v3/contracts/
+@openzeppelin/=lib/juice-project-handles/node_modules/@openzeppelin/
+@openzeppelin/contracts/=lib/juice-contracts-v3/lib/openzeppelin-contracts/contracts/
+@paulrberg/contracts/math/=lib/juice-contracts-v3/lib/prb-math/contracts/
+base64/=lib/base64/
+chainlink/=lib/juice-contracts-v3/lib/chainlink/
+ds-test/=lib/forge-std/lib/ds-test/src/
+ens/=lib/ens/contracts/
+forge-std/=lib/forge-std/src/
+juice-contracts-v3/=lib/juice-contracts-v3/contracts/
+juice-project-handles/=lib/juice-project-handles/contracts/
+openzeppelin-contracts/contracts/=lib/juice-contracts-v3/lib/openzeppelin-contracts/contracts/
+prb-math/=lib/juice-contracts-v3/lib/prb-math/
