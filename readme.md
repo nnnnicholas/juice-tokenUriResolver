@@ -6,6 +6,11 @@
 
 Replace `$ETH_RPC_URL` and `BLOCK_NUMBER` with your preferred values.
 
+## Deploying
+### Goerli
+#### DefaultTokenUriResolver
+`forge create --rpc-url $GOERLI_RPC_URL --constructor-args-path deploy/DefaultTokenUriResolver/goerli_constructor_args --private-key $GOERLI_PRIV_KEY --etherscan-api-key $ETHERSCAN_API_KEY --via-ir --verify src/DefaultTokenUriResolver.sol:DefaultTokenUriResolver`
+
 ## Demo
 
 ![](src/tokenuriresolver.png)
