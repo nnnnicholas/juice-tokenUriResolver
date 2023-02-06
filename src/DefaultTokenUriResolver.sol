@@ -9,11 +9,14 @@ import {JBTokens} from "@juicebox/libraries/JBTokens.sol";
 import {JBCurrencies} from "@juicebox/libraries/JBCurrencies.sol";
 import {IJBController, IJBDirectory, IJBFundingCycleStore} from "@juicebox/interfaces/IJBController.sol";
 import {IJBOperatorStore} from "@juicebox/interfaces/IJBOperatorStore.sol";
+import {IJBPayoutRedemptionPaymentTerminal} from "@juicebox/interfaces/IJBPayoutRedemptionPaymentTerminal.sol";
 import {IJBSingleTokenPaymentTerminalStore, IJBSingleTokenPaymentTerminal} from "@juicebox/interfaces/IJBSingleTokenPaymentTerminalStore.sol";
+import {JBPayoutRedemptionPaymentTerminal} from "@juicebox/abstract/JBPayoutRedemptionPaymentTerminal.sol";
 import {IJBProjects} from "@juicebox/interfaces/IJBProjects.sol";
 import {IJBProjectHandles} from "juice-project-handles/interfaces/IJBProjectHandles.sol";
 import {JBOperatable} from "@juicebox/abstract/JBOperatable.sol";
 import {JBUriOperations} from "./Libraries/JBUriOperations.sol";
+import {Theme} from "./Structs/Theme.sol";
 import "base64/base64.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "./ITypeface.sol";
@@ -38,14 +41,6 @@ contract StringSlicer {
     }
 }
 
-// TODO move to its own definition library
-struct Theme {
-    uint256 projectId;
-    string textColor;
-    string bgColor;
-    string bgColorDark;
-}
-
 contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
     using Strings for uint256;
     StringSlicer slice = new StringSlicer();
@@ -62,34 +57,29 @@ contract DefaultTokenUriResolver is IJBTokenUriResolver, JBOperatable {
     IJBController public controller;
     IJBProjectHandles public projectHandles;
     ITypeface public capsulesTypeface; // Capsules typeface
-    IReverseRegistrar public reverseRegistrar; // ENS
-    IResolver public resolver; // ENS
+    // IReverseRegistrar public reverseRegistrar; // ENS
+    // IResolver public resolver; // ENS
 
     mapping(uint256 => Theme) public themes;
 
     constructor(
-        IJBFundingCycleStore _fundingCycleStore,
-        IJBProjects _projects,
-        IJBDirectory _directory,
-        IJBTokenStore _tokenStore,
-        IJBSingleTokenPaymentTerminalStore _singleTokenPaymentTerminalStore,
-        IJBController _controller,
         IJBOperatorStore _operatorStore,
+        IJBDirectory _directory,
         IJBProjectHandles _projectHandles,
-        ITypeface _capsulesTypeface,
-        IReverseRegistrar _reverseRegistrar,
-        IResolver _resolver
+        ITypeface _capsulesTypeface
+        // IReverseRegistrar _reverseRegistrar,
+        // IResolver _resolver
     ) JBOperatable(_operatorStore) {
-        fundingCycleStore = _fundingCycleStore;
-        projects = _projects;
         directory = _directory;
-        tokenStore = _tokenStore;
+        projects = directory.projects();
+        fundingCycleStore = directory.fundingCycleStore();
+        controller = IJBController(directory.controllerOf(1));
+        tokenStore = controller.tokenStore();
+        singleTokenPaymentTerminalStore = IJBSingleTokenPaymentTerminalStore(IJBPayoutRedemptionPaymentTerminal(address(IJBPaymentTerminal(directory.primaryTerminalOf(1, JBTokens.ETH)))).store());
         projectHandles = _projectHandles;
-        singleTokenPaymentTerminalStore = _singleTokenPaymentTerminalStore;
-        controller = _controller;
         capsulesTypeface = _capsulesTypeface;
-        reverseRegistrar = _reverseRegistrar;
-        resolver = _resolver;
+        // reverseRegistrar = _reverseRegistrar;
+        // resolver = _resolver;
         themes[0] = Theme({
             projectId: 0,
             textColor: "#FF9213",

@@ -41,17 +41,12 @@ contract ContractTest is Test {
 
     DefaultTokenUriResolver d =
         new DefaultTokenUriResolver(
-            _fundingCycleStore,
-            _projects,
-            _directory,
-            _tokenStore,
-            _singleTokenPaymentTerminalStore,
-            _controller,
-            _operatorStore,
-            _projectHandles,
-            _capsulesTypeface,
-            _reverseRegistrar,
-            _resolver
+            _operatorStore
+            ,_directory
+            ,_projectHandles
+            ,_capsulesTypeface
+            // ,_reverseRegistrar
+            // ,_resolver
         );
 
     TokenUriResolver t = new TokenUriResolver(_projects, _operatorStore, d);
@@ -86,17 +81,12 @@ contract ContractTest is Test {
         d.setTheme(customTheme);
         // Create and set a new default resolver
         DefaultTokenUriResolver n = new DefaultTokenUriResolver(
-            _fundingCycleStore,
-            _projects,
-            _directory,
-            _tokenStore,
-            _singleTokenPaymentTerminalStore,
-            _controller,
-            _operatorStore,
-            _projectHandles,
-            _capsulesTypeface,
-            _reverseRegistrar,
-            _resolver
+            _operatorStore
+            ,_directory
+            ,_projectHandles
+            ,_capsulesTypeface
+            // ,_reverseRegistrar
+            // ,_resolver
         );
         t.setDefaultTokenUriResolver(n);
         assertEq(
@@ -125,17 +115,12 @@ contract ContractTest is Test {
         string memory z = x.getUri(1);
         assertEq(z, "", "Default metadata should be empty");
         DefaultTokenUriResolver y = new DefaultTokenUriResolver(
-            _fundingCycleStore,
-            _projects,
-            _directory,
-            _tokenStore,
-            _singleTokenPaymentTerminalStore,
-            _controller,
-            _operatorStore,
-            _projectHandles,
-            _capsulesTypeface,
-            _reverseRegistrar,
-            _resolver
+            _operatorStore
+            ,_directory
+            ,_projectHandles
+            ,_capsulesTypeface
+            // ,_reverseRegistrar
+            // ,_resolver
         );
         x.setDefaultTokenUriResolver(y);
         x.getUri(1);
